@@ -1,0 +1,125 @@
+/* src/styles/App.css */
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+/* Styles for the main content area that sits on top of the background */
+.app-content-wrapper {
+  /* This div will be a child of BackgroundImage */
+  /* You can add padding or max-width here if needed */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 20px; /* Padding around the content area */
+}
+
+.screen-container {
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent dark background for readability */
+  padding: 25px;
+  border-radius: 12px;
+  color: white;
+  text-align: center;
+  min-width: 300px; /* Minimum width for the content box */
+  max-width: 90%; /* Maximum width */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.screen-container h1 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+.screen-container h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.5em;
+}
+.screen-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.2em;
+}
+
+
+.screen-container p {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+button {
+  padding: 12px 24px;
+  margin: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 8px;
+  border: none;
+  background-color: #61dafb; /* A light blue, adjust to your theme */
+  color: #282c34; /* Dark text for light button */
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+button:hover {
+  background-color: #21a1f1; /* A darker blue on hover */
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.options-container button {
+  display: block; /* Make options take full width available in their container */
+  width: 100%;
+  margin: 8px 0; /* Adjust margin for vertical stacking */
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.options-container button.selected {
+  background-color: #a0e9ff; /* Highlight for selected option */
+  border: 2px solid #61dafb;
+}
+
+.options-container button.correct {
+  background-color: #a3f7a3; /* Green for correct */
+  color: #005000;
+}
+.options-container button.incorrect {
+  background-color: #f7a3a3; /* Red for incorrect */
+  color: #500000;
+}
+
+.feedback-text {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.feedback-text.correct {
+  color: #77dd77; /* Light green for correct feedback text */
+}
+
+.feedback-text.incorrect {
+  color: #ff6961; /* Light red for incorrect feedback text */
+}
