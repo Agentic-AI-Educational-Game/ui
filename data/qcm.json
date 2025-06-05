@@ -1,0 +1,22 @@
+[
+    {
+        "question": "What is the largest planet in our solar system?",
+        "choices": {
+            "A": "Earth",
+            "B": "Jupiter",
+            "C": "Mars",
+            "D": "Venus"
+        },
+        "correct": "B"
+    },
+    {
+        "question": "Which animal is known for its black and white stripes?",
+        "choices": {
+            "A": "Tiger",
+            "B": "Zebra",
+            "C": "Leopard",
+            "D": "Cheetah"
+        },
+        "correct": "B"
+    }
+]
