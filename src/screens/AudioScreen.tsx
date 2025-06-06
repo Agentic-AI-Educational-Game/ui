@@ -4,15 +4,16 @@ import { AudioRecorder } from '../components/AudioRecorder'; // Adjust path if A
 import { Button } from '@/components/ui/button'; // Assuming you use shadcn/ui button
 
 interface AudioScreenProps {
-  passageToRead: string; // The text the user should read
+  passageToRead?: string; // The text the user should read
   onRecordingSubmitted: (audioBlob: Blob) => void; // Callback when user is "done" with this screen
   onNavigateBack?: () => void; // Optional: to go back to a previous screen
 }
 
 export const AudioScreen: React.FC<AudioScreenProps> = ({
-  passageToRead = "The quick brown fox jumps over the lazy dog. She sells seashells by the seashore.", // Default passage
   onRecordingSubmitted,
   onNavigateBack,
+  passageToRead = "The quick brown fox mps over the lazy dog. She sells seashells by the seashore.", // Default passage
+
 }) => {
   const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);

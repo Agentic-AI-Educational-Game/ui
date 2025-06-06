@@ -14,7 +14,7 @@ export const MainMenuScreen: FC<MainMenuScreenProps> = ({ onStartMCQ }) => {
         <img
           src={Icon}
           alt="start"
-          className=" sm:w-24 sm:h-24 md:w-28 md:h-28" 
+          className="sm:w-24 sm:h-24 md:w-28 md:h-28" 
         />
       </button>
     </>
