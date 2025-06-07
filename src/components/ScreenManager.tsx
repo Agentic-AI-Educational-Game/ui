@@ -14,6 +14,7 @@ export const ScreenManager: React.FC = () => {
     quizState,
     submitQcmAnswer,
     handleAudioSubmitted,
+    audioState
   } = useAppContext();
 
   const isLastQuestion = quizState.currentQuestionIndex === quizState.totalQuestions - 1;
@@ -31,7 +32,7 @@ export const ScreenManager: React.FC = () => {
           questions={quizState.currentQuestion}
           onAnswer={submitQcmAnswer} // QcmScreen now calls submitQcmAnswer from context
           goToMenu={navigateToMenu}
-          goToAudio={isLastQuestion && !quizState.isQuizFinished ? navigateToAudioScreen : undefined}
+          goToNext={isLastQuestion && !quizState.isQuizFinished ? navigateToAudioScreen : undefined}
           key={quizState.currentQuestion.question || quizState.currentQuestionIndex}
         />
       );
@@ -46,18 +47,25 @@ export const ScreenManager: React.FC = () => {
         />
       );
     case SCREEN_TYPES.AUDIO:
+       if (!audioState.currentQuestion) {
+        // This should ideally be prevented by the logic in AppProvider
+        console.warn("Attempting to render Audio without a question.");
+        navigateToMenu(); // Fallback
+        return null;
+      }
       return (
         <AudioScreen
           onRecordingSubmitted={handleAudioSubmitted}
           onNavigateBack={navigateToMenu}
+          question={audioState.currentQuestion}
+          goToNext={navigateToQcm}
         />
       );
     case SCREEN_TYPES.MENU:
     default:
       return (
         <MainMenuScreen
-          onStartMCQ={navigateToQcm}
-          // onStartAudioPractice={navigateToAudioScreen} // If MainMenu can go to Audio
+          goToNext={navigateToAudioScreen}
         />
       );
   }

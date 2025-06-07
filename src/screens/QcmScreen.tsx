@@ -6,7 +6,7 @@ import type QuestionQcm from '../interface/QuestionQcm'; // Import the type
 
 interface QcmScreenProps {
   goToMenu: () => void;
-  goToAudio?: ()=> void; 
+  goToNext?: ()=> void; 
   onAnswer: (selectedChoiceKey: string) => void; // Callback when an answer is submitted
   questions: QuestionQcm; // Expects a single question object
 }
@@ -15,7 +15,7 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
   questions,
   goToMenu,
   onAnswer,
-  goToAudio
+  goToNext
 }) => {
   const [selectedChoiceKey, setSelectedChoiceKey] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false); // To show if answer was correct/incorrect
@@ -114,8 +114,8 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
         >
           Main Menu
         </Button>
-          {goToAudio && (
-            <Button variant="ghost" onClick={goToAudio}>Go to Audio</Button>
+          {goToNext && (
+            <Button variant="ghost" onClick={goToNext}>Go to Audio</Button>
           )}      
         </CardFooter>
     </Card>
