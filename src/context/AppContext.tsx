@@ -10,7 +10,6 @@ import type QuestionQcm from '@/interface/QuestionQcm';
 import type AudioQuestion from '@/interface/AudioQuestion';
 
 import allQuestionAudio from '../../data/audio_text.json';
-import { AudioScreen } from '@/screens/AudioScreen';
 const allAudioQuestions = allQuestionAudio as AudioQuestion[];
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -188,7 +187,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         navigateToQcm();
       }
     },
-    [audioState, AudioScreen]
+    [audioState, navigateToQcm]
   );
 
   const contextValue: AppContextType = {
@@ -207,6 +206,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppContext);
   if (context === undefined) {
