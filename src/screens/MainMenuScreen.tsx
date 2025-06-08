@@ -1,22 +1,40 @@
+// src/screens/MainMenuScreen.tsx
 import type { FC } from "react";
-import Icon from "../../public/assets/wood_clid.png"
+import { motion } from "framer-motion";
+
 interface MainMenuScreenProps {
-  goToNext: () => void; // This prop will be a function to call when "Start" is clicked
+  startGame: () => void;
 }
 
-export const MainMenuScreen: FC<MainMenuScreenProps> = ({ goToNext }) => {
+export const MainMenuScreen: FC<MainMenuScreenProps> = ({ startGame }) => {
   return (
-    <>
-        <button
-        onClick={goToNext}
-        className="p-0 bg-transparent border-none rounded-full focus:outline-none focus:ring-4 focus:ring-sky-500/50 hover:opacity-80 transition-opacity"
+    <div className="flex flex-col items-center justify-center h-screen text-center p-4">
+     
+      <motion.button
+        onClick={startGame}
+        className="p-0 bg-transparent border-none rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-orange-400"
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        whileTap={{ scale: 0.9, rotate: -5 }}
+        transition={{ type: "spring", stiffness: 300 }}
       >
-        <img
-          src={Icon}
-          alt="start"
-          className="sm:w-24 sm:h-24 md:w-28 md:h-28" 
-        />
-      </button>
-    </>
+          <motion.h1 
+        className="text-5xl md:text-7xl font-bold text-yellow-900 drop-shadow-lg [text-shadow:_4px_4px_0_rgb(255_255_255_/_50%)]"
+        style={{ fontFamily: "'Fredoka One', cursive" }}
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 120 }}
+      >
+        Fun Quiz Adventure!
+      </motion.h1>
+      <motion.p 
+        className="text-xl text-amber-700 mt-2 mb-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        Let's play and learn!
+      </motion.p>
+      </motion.button>
+    </div>
   );
 }

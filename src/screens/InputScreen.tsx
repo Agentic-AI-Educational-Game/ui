@@ -1,9 +1,10 @@
+// src/screens/InputScreen.tsx
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input'; // Import the Input component
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // For feedback
+import { Input } from '@/components/ui/input';
 import type InputQuestion from '../interface/InputQuestion';
+import { motion } from 'framer-motion';
 
 interface InputScreenProps {
   question: InputQuestion;
@@ -16,101 +17,77 @@ export const InputScreen: React.FC<InputScreenProps> = ({
   onAnswerSubmit,
   onNavigateBack,
 }) => {
-  const [userAnswer, setUserAnswer] = useState<string>('');
+  const [userAnswer, setUserAnswer] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const handleSubmit = () => {
-    // Trim answer to avoid issues with whitespace
     const trimmedAnswer = userAnswer.trim();
-    if (!trimmedAnswer) return; // Don't submit empty answers
+    if (!trimmedAnswer) return;
 
     const correct = trimmedAnswer.toLowerCase() === question.correct_answer.toLowerCase();
     setIsCorrect(correct);
     setShowFeedback(true);
 
-    // Give user time to see the feedback before advancing
     setTimeout(() => {
       onAnswerSubmit(trimmedAnswer);
-      // Reset state for the next question automatically
       setShowFeedback(false);
       setUserAnswer('');
       setIsCorrect(null);
-    }, 2000); // 2-second delay
+    }, 2500);
   };
 
-  const getBorderColor = () => {
-    if (!showFeedback) return 'border-slate-300 dark:border-slate-600 focus-within:border-emerald-500';
+  const getFeedbackColor = () => {
+    if (!showFeedback) return 'border-orange-300 focus-within:border-orange-500';
     return isCorrect ? 'border-green-500' : 'border-red-500';
   };
 
   return (
-    <Card className="w-full max-w-lg bg-emerald-50/80 dark:bg-slate-900/80 backdrop-blur-md border-emerald-300 dark:border-slate-700 shadow-xl">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-2xl font-semibold text-emerald-700 dark:text-emerald-400 text-center">
-          Type the Answer
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Question Box */}
-        <div className="bg-lime-100 dark:bg-emerald-800/50 p-5 rounded-lg shadow text-lime-800 dark:text-emerald-100">
-          <p className="text-lg md:text-xl leading-relaxed">{question.question}</p>
-        </div>
-        
-        {/* Hint Box */}
-        <div className="text-sm text-slate-500 dark:text-slate-400 italic px-2">
+    <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }}>
+      <Card className="w-full max-w-lg bg-orange-100/80 backdrop-blur-sm border-4 border-orange-400 shadow-2xl rounded-3xl p-2 sm:p-4">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold text-orange-800" style={{ fontFamily: "'Fredoka One', cursive" }}>
+            What's the Word?
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-white/80 p-5 rounded-2xl shadow-inner">
+            <p className="text-xl text-center font-semibold text-slate-800 leading-relaxed">{question.question}</p>
+          </div>
+          <div className="text-center text-orange-700 font-semibold">
             Hint: {question.hint}
-        </div>
-
-        {/* Input and Submit Area */}
-        <div className="space-y-4">
-          <Input
-            type="text"
-            value={userAnswer}
-            onChange={(e) => setUserAnswer(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            placeholder="Your answer..."
-            disabled={showFeedback}
-            className={`h-12 text-lg border-2 transition-colors duration-300 ${getBorderColor()}`}
-          />
-          <Button
-            onClick={handleSubmit}
-            size="lg"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-            disabled={!userAnswer.trim() || showFeedback}
-          >
-            {showFeedback ? (isCorrect ? 'Correct!' : 'Incorrect') : 'Submit Answer'}
-          </Button>
-        </div>
-
-        {/* Feedback Alert */}
-        {showFeedback && !isCorrect && (
-           <Alert variant="destructive">
-             <AlertTitle>Not quite!</AlertTitle>
-             <AlertDescription>
-               The correct answer was: <strong>{question.correct_answer}</strong>
-             </AlertDescription>
-           </Alert>
-        )}
-         {showFeedback && isCorrect && (
-           <Alert className="bg-green-100 border-green-400 text-green-800 dark:bg-green-900/50 dark:border-green-700 dark:text-green-300">
-             <AlertTitle>Well done!</AlertTitle>
-             <AlertDescription>
-               You got it right! Moving to the next question...
-             </AlertDescription>
-           </Alert>
-        )}
-      </CardContent>
-
-      <CardFooter className="flex justify-center pt-6">
-        <Button
-          onClick={onNavigateBack}
-          variant="ghost"
-          className="text-emerald-700 dark:text-slate-400 hover:bg-emerald-500/10"
-        >
-          Back to Main Menu
-        </Button>
-      </CardFooter>
-    </Card>
+          </div>
+          <div className="space-y-4 pt-2">
+            <Input
+              type="text"
+              value={userAnswer}
+              onChange={(e) => setUserAnswer(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              placeholder="Type here!"
+              disabled={showFeedback}
+              className={`h-16 text-2xl text-center font-bold border-4 rounded-2xl transition-colors duration-300 ${getFeedbackColor()}`}
+            />
+            <Button
+              onClick={handleSubmit}
+              size="lg"
+              className="w-full h-16 text-2xl font-bold rounded-2xl border-b-8 transition-all duration-100 active:border-b-2 active:mt-2 bg-yellow-400 border-yellow-600 text-yellow-900 hover:bg-yellow-300 disabled:bg-slate-300 disabled:text-slate-500 disabled:border-slate-400"
+              disabled={!userAnswer.trim() || showFeedback}
+            >
+              {showFeedback ? (isCorrect ? 'Awesome! 😄' : 'Not quite...') : 'Check!'}
+            </Button>
+          </div>
+          {showFeedback && !isCorrect && (
+             <div className="text-center font-bold text-red-600 bg-red-100 p-3 rounded-xl">
+               Correct answer: {question.correct_answer}
+             </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-center pt-4">
+            <Button onClick={onNavigateBack} variant="link" className="text-orange-600 font-semibold">
+                Back to Menu
+            </Button>
+        </CardFooter>
+      </Card>
+    </motion.div>
   );
 };

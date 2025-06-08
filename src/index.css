@@ -116,5 +116,8 @@
   }
   body {
     @apply bg-background text-foreground;
+     @apply bg-gradient-to-br from-emerald-50 to-sky-100 dark:from-slate-900 dark:to-emerald-950;
+    @apply font-sans;
   }
+  
 }

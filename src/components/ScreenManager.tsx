@@ -3,88 +3,69 @@ import React from 'react';
 import { useAppContext, SCREEN_TYPES } from '../context/AppContext';
 import { MainMenuScreen } from '../screens/MainMenuScreen';
 import { QcmScreen } from '../screens/QcmScreen';
+import { InputScreen } from '../screens/InputScreen';
 import { AudioScreen } from '../screens/AudioScreen';
-import { FinalScore } from '../screens/FinalScore'; // Assuming you have this component
-import { InputScreen } from '@/screens/InputScreen';
+import { FinalScore } from '../screens/FinalScore';
+
 export const ScreenManager: React.FC = () => {
   const {
     currentScreen,
     navigateToMenu,
-    navigateToQcm,
-    navigateToAudioScreen,
+    startGame,
+    finalScore,
     quizState,
     submitQcmAnswer,
-    handleAudioSubmitted,
-    audioState,
-    navigateToInputScreen,
     inputState,
     submitInputAnswer,
+    audioState,
+    handleAudioSubmitted,
   } = useAppContext();
 
-  const isLastQuestion = quizState.currentQuestionIndex === quizState.totalQuestions - 1;
-
   switch (currentScreen) {
-     case SCREEN_TYPES.INPUT:
-      if (!inputState.currentQuestion) {
-        console.warn("Attempting to render InputScreen without a question.");
-        navigateToMenu();
-        return null;
-      }
-      return (
-        <InputScreen
-          question={inputState.currentQuestion}
-          onAnswerSubmit={submitInputAnswer}
-          onNavigateBack={navigateToMenu}
-          key={inputState.currentQuestion._id} // Use a unique key
-        />
-      );
+    case SCREEN_TYPES.MENU:
+      return <MainMenuScreen startGame={startGame} />;
+
     case SCREEN_TYPES.QCM:
-      if (!quizState.currentQuestion) {
-        // This should ideally be prevented by the logic in AppProvider
-        console.warn("Attempting to render QCM without a question.");
-        navigateToMenu(); // Fallback
-        return null;
-      }
       return (
         <QcmScreen
-          questions={quizState.currentQuestion}
-          onAnswer={submitQcmAnswer} // QcmScreen now calls submitQcmAnswer from context
-          goToMenu={navigateToMenu}
-          goToNext={isLastQuestion && !quizState.isQuizFinished ? navigateToAudioScreen : undefined}
-          key={quizState.currentQuestion.question || quizState.currentQuestionIndex}
+          question={quizState.currentQuestion!}
+          onAnswer={submitQcmAnswer}
+          onNavigateBack={navigateToMenu}
+          key={`qcm-${quizState.currentQuestionIndex}`}
         />
       );
+
+    case SCREEN_TYPES.INPUT:
+      return (
+        <InputScreen
+          question={inputState.currentQuestion!}
+          onAnswerSubmit={submitInputAnswer}
+          onNavigateBack={navigateToMenu}
+          key={`input-${inputState.currentQuestionIndex}`}
+        />
+      );
+
+    case SCREEN_TYPES.AUDIO:
+      return (
+        <AudioScreen
+          question={audioState.currentQuestion!}
+          onRecordingSubmitted={handleAudioSubmitted}
+          onNavigateBack={navigateToMenu}
+          key={`audio-${audioState.currentQuestionIndex}`}
+        />
+      );
+
     case SCREEN_TYPES.SCORE:
       return (
         <FinalScore
-          finalScoreDisplay={quizState.score} // Score comes from quizState
-          qcmQuestions={quizState.qcmQuestions} // This might not be needed if totalQuestions is enough
-          navigateToAudio={navigateToAudioScreen}
-          navigateToMenu={navigateToMenu}
-          // navigateToAudio={navigateToAudioScreen} // If you want this option from score screen
+          finalScore={finalScore}
+          totalQuestions={quizState.totalQuestions + inputState.totalQuestions}
+          playAgain={startGame}
+          goToMenu={navigateToMenu}
         />
       );
-    case SCREEN_TYPES.AUDIO:
-       if (!audioState.currentQuestion) {
-        // This should ideally be prevented by the logic in AppProvider
-        console.warn("Attempting to render Audio without a question.");
-        navigateToMenu(); // Fallback
-        return null;
-      }
-      return (
-        <AudioScreen
-          onRecordingSubmitted={handleAudioSubmitted}
-          onNavigateBack={navigateToMenu}
-          question={audioState.currentQuestion}
-          goToNext={navigateToQcm}
-        />
-      );
-    case SCREEN_TYPES.MENU:
+
     default:
-      return (
-        <MainMenuScreen
-          goToNext={navigateToInputScreen}
-        />
-      );
+      return <MainMenuScreen startGame={startGame} />;
   }
 };

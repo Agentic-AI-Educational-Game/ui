@@ -1,87 +1,71 @@
 // src/screens/AudioScreen.tsx
 import React, { useState } from 'react';
-import { AudioRecorder } from '../components/AudioRecorder'; // Adjust path if AudioRecorder is elsewhere
-import { Button } from '@/components/ui/button'; // Assuming you use shadcn/ui button
+import { AudioRecorder } from '../components/AudioRecorder';
+import { Button } from '@/components/ui/button';
 import type AudioQuestion from '../interface/AudioQuestion';
-interface AudioScreenProps {
-  question: AudioQuestion ; // The text the user should read
-  onRecordingSubmitted: (audioBlob: Blob) => void; // Callback when user is "done" with this screen
-  onNavigateBack?: () => void; // Optional: to go back to a previous screen
-  goToNext?: ()=> void; 
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion } from 'framer-motion';
 
+interface AudioScreenProps {
+  question: AudioQuestion;
+  onRecordingSubmitted: (audioBlob: Blob) => void;
+  onNavigateBack: () => void;
 }
 
 export const AudioScreen: React.FC<AudioScreenProps> = ({
+  question,
   onRecordingSubmitted,
   onNavigateBack,
-  question,
-  goToNext
-
 }) => {
   const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string>('');
 
   const handleRecordingComplete = (wavBlob: Blob) => {
-    console.log('AudioScreen: Recording complete, WAV Blob received.', wavBlob);
     setRecordedAudio(wavBlob);
-    setStatusMessage('Recording complete! Review and submit.');
-    setIsSubmitted(false); // Reset submitted state if re-recording
+    setIsSubmitted(false); // Allow re-submission if user re-records
   };
 
   const handleSubmitRecording = () => {
     if (recordedAudio) {
-      setStatusMessage('Submitting recording...');
-      console.log('AudioScreen: Submitting recording to parent/API.');
       onRecordingSubmitted(recordedAudio);
       setIsSubmitted(true);
-      setStatusMessage('Recording submitted successfully!');
-     
-    } else {
-      setStatusMessage('No recording available to submit. Please record first.');
     }
   };
 
   return (
-    <div className=" p-6 md:p-8 rounded-xl  text-white w-full max-w-xl mx-auto">
-
-      <div className="mb-6 p-4 bg-slate-700/60 rounded-md border border-slate-600">
-        <p className="text-slate-200 leading-relaxed text-lg  max-h-70 overflow-scroll">{question.transcript}</p>
-      </div>
-
-      <AudioRecorder onRecordingComplete={handleRecordingComplete} />
-
-      {statusMessage && (
-        <p className={`mt-4 text-sm p-3 rounded-md ${isSubmitted ? 'bg-green-700/50 text-green-300' : 'bg-sky-700/50 text-sky-300'}`}>
-          {statusMessage}
-        </p>
-      )}
-
-      {recordedAudio && !isSubmitted && (
-        <Button
-          onClick={handleSubmitRecording}
-          size="lg"
-          className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white"
-        >
-          Submit My Reading
-        </Button>
-      )}
-
-      {onNavigateBack && (
-        <div className="mt-6 text-center">
-          <Button onClick={onNavigateBack} variant="link" className="text-slate-400 hover:text-sky-300">
-            {isSubmitted ? 'Back to Menu' : 'Cancel / Back to Menu'}
-          </Button>
-        </div>
-      )}
-
-       {goToNext && (
-        <div className="mt-6 text-center">
-          <Button onClick={goToNext} variant="link" className="text-slate-400 hover:text-sky-300">
-            continue
-          </Button>
-        </div>
-      )}
-    </div>
+    <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }}>
+      <Card className="w-full max-w-lg bg-purple-100/80 backdrop-blur-sm border-4 border-purple-400 shadow-2xl rounded-3xl p-2 sm:p-4">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl md:text-4xl font-bold text-purple-800" style={{ fontFamily: "'Fredoka One', cursive" }}>
+            Let's Read Aloud!
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="bg-white/80 p-5 rounded-2xl shadow-inner max-h-48 overflow-y-auto">
+            <p className="text-xl text-center font-semibold text-slate-800 leading-relaxed">{question.transcript}</p>
+          </div>
+          
+          <AudioRecorder onRecordingComplete={handleRecordingComplete} />
+          
+          {recordedAudio && (
+            <div className="text-center">
+              <Button
+                onClick={handleSubmitRecording}
+                size="lg"
+                className="h-16 text-2xl font-bold rounded-2xl border-b-8 transition-all duration-100 active:border-b-2 active:mt-2 bg-pink-400 border-pink-600 text-white hover:bg-pink-300 disabled:bg-slate-300 disabled:text-slate-500 disabled:border-slate-400"
+                disabled={isSubmitted}
+              >
+                {isSubmitted ? 'Sent! 👍' : 'All Done! 🎉'}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-center pt-4">
+            <Button onClick={onNavigateBack} variant="link" className="text-purple-600 font-semibold">
+                Back to Menu
+            </Button>
+        </CardFooter>
+      </Card>
+    </motion.div>
   );
 };
