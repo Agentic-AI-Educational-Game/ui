@@ -5,6 +5,7 @@ import { MainMenuScreen } from '../screens/MainMenuScreen';
 import { QcmScreen } from '../screens/QcmScreen';
 import { AudioScreen } from '../screens/AudioScreen';
 import { FinalScore } from '../screens/FinalScore'; // Assuming you have this component
+import { InputScreen } from '@/screens/InputScreen';
 export const ScreenManager: React.FC = () => {
   const {
     currentScreen,
@@ -14,12 +15,29 @@ export const ScreenManager: React.FC = () => {
     quizState,
     submitQcmAnswer,
     handleAudioSubmitted,
-    audioState
+    audioState,
+    navigateToInputScreen,
+    inputState,
+    submitInputAnswer,
   } = useAppContext();
 
   const isLastQuestion = quizState.currentQuestionIndex === quizState.totalQuestions - 1;
 
   switch (currentScreen) {
+     case SCREEN_TYPES.INPUT:
+      if (!inputState.currentQuestion) {
+        console.warn("Attempting to render InputScreen without a question.");
+        navigateToMenu();
+        return null;
+      }
+      return (
+        <InputScreen
+          question={inputState.currentQuestion}
+          onAnswerSubmit={submitInputAnswer}
+          onNavigateBack={navigateToMenu}
+          key={inputState.currentQuestion._id} // Use a unique key
+        />
+      );
     case SCREEN_TYPES.QCM:
       if (!quizState.currentQuestion) {
         // This should ideally be prevented by the logic in AppProvider
@@ -65,7 +83,7 @@ export const ScreenManager: React.FC = () => {
     default:
       return (
         <MainMenuScreen
-          goToNext={navigateToAudioScreen}
+          goToNext={navigateToInputScreen}
         />
       );
   }

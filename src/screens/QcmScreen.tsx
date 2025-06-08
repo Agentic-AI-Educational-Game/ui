@@ -1,15 +1,34 @@
 // src/screens/QcmScreen.tsx
-import React, { useState } from 'react'; // useState for selected option
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'; // Added CardHeader, CardTitle
-import type QuestionQcm from '../interface/QuestionQcm'; // Import the type
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import type QuestionQcm from '../interface/QuestionQcm'; // This now imports the new interface
 
 interface QcmScreenProps {
   goToMenu: () => void;
-  goToNext?: ()=> void; 
-  onAnswer: (selectedChoiceKey: string) => void; // Callback when an answer is submitted
-  questions: QuestionQcm; // Expects a single question object
+  goToNext?: () => void;
+  onAnswer: (selectedChoiceKey: string) => void;
+  questions: QuestionQcm; // Prop now expects the new question format
 }
+
+// Helper function to extract choices from the new question format.
+// It finds keys starting with "option", handles different separators (' ' or '_'), and sorts them.
+const getChoicesFromQuestion = (q: QuestionQcm): [string, string][] => {
+    const choices: [string, string][] = [];
+    for (const key in q) {
+        if (key.toLowerCase().startsWith('option')) {
+            // Extracts 'A' from 'option A' or 'option_B'
+            const label = key.split(/[\s_]/).pop()?.toUpperCase() ?? '';
+            if (label && typeof q[key] === 'string') {
+                choices.push([label, q[key]]);
+            }
+        }
+    }
+    // Sort choices by label (A, B, C, D) to ensure a consistent order
+    choices.sort((a, b) => a[0].localeCompare(b[0]));
+    return choices;
+};
+
 
 export const QcmScreen: React.FC<QcmScreenProps> = ({
   questions,
@@ -18,22 +37,21 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
   goToNext
 }) => {
   const [selectedChoiceKey, setSelectedChoiceKey] = useState<string | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false); // To show if answer was correct/incorrect
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  // Call the helper function to get choices in a usable format: [["A", "Text A"], ["B", "Text B"], ...]
+  const choices = getChoicesFromQuestion(questions);
 
   const handleSelectAndSubmit = (choiceKey: string) => {
     setSelectedChoiceKey(choiceKey);
-   
     setShowFeedback(true);
 
-    // You could delay calling onAnswer to show feedback for a moment
     setTimeout(() => {
       onAnswer(choiceKey);
-      setSelectedChoiceKey(null); // Reset for next question
+      setSelectedChoiceKey(null);
       setShowFeedback(false);
-    }, 1500); // e.g., 1.5 second delay
-
+    }, 1500);
   };
-
 
   return (
     <Card className="w-full max-w-lg bg-emerald-50/80 dark:bg-slate-900/80 backdrop-blur-md border-emerald-300 dark:border-slate-700 shadow-xl">
@@ -50,9 +68,11 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
         </div>
 
         <div className="flex flex-col gap-3">
-          {Object.entries(questions.choices).map(([label, text]) => {
+          {/* CHANGE: We now map over the `choices` array we created instead of `questions.choices` */}
+          {choices.map(([label, text]) => {
             const isSelected = selectedChoiceKey === label;
-            const isCorrect = questions.correct === label;
+            // CHANGE: Use `correct_option` to check for the correct answer
+            const isCorrect = questions.correct_option === label;
             let buttonClasses = `
               justify-start text-left h-auto py-3 px-4 break-words whitespace-normal
               border-2 transition-all duration-150 ease-in-out
@@ -61,14 +81,14 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
               focus:ring-2 focus:ring-green-500 dark:focus:ring-emerald-400
             `;
 
-            if (showFeedback && isSelected) { // After an answer is submitted
+            if (showFeedback && isSelected) {
               buttonClasses += isCorrect
-                ? ' bg-green-200 dark:bg-green-700 border-green-500 dark:border-green-500' // Correct selected
-                : ' bg-red-200 dark:bg-red-700 border-red-500 dark:border-red-500'; // Incorrect selected
-            } else if (showFeedback && isCorrect) { // Show correct answer if a wrong one was picked
-                buttonClasses += ' bg-green-100 dark:bg-green-800 border-green-400 dark:border-green-600';
+                ? ' bg-green-200 dark:bg-green-700 border-green-500 dark:border-green-500'
+                : ' bg-red-200 dark:bg-red-700 border-red-500 dark:border-red-500';
+            } else if (showFeedback && isCorrect) {
+              buttonClasses += ' bg-green-100 dark:bg-green-800 border-green-400 dark:border-green-600';
             }
-            else if (isSelected) { // Just selected, before submitting (if you had a separate submit button)
+            else if (isSelected) {
               buttonClasses += ' bg-sky-100 dark:bg-sky-700 border-sky-500 dark:border-sky-500';
             } else {
               buttonClasses += ' border-green-400 dark:border-emerald-600 bg-white hover:bg-green-50 dark:bg-slate-800 dark:hover:bg-slate-700/70';
@@ -79,8 +99,8 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
                 key={label}
                 variant="outline"
                 size="lg"
-                onClick={() => handleSelectAndSubmit(label)} // Call when a choice is clicked
-                disabled={showFeedback} // Disable buttons after an answer is "submitted" for feedback
+                onClick={() => handleSelectAndSubmit(label)}
+                disabled={showFeedback}
                 className={buttonClasses}
               >
                 <span className="font-bold mr-3 text-green-600 dark:text-emerald-400">
@@ -101,7 +121,7 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
                               }}
                 size="lg"
                 className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white"
-                disabled={!selectedChoiceKey} // Only enable if an answer was selected
+                disabled={!selectedChoiceKey}
             >
                 Next Question (Handled by App)
             </Button>

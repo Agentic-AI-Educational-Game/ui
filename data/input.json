@@ -1,0 +1,20 @@
+[
+  {
+    "_id": 1,
+    "question": "What is the capital of France?",
+    "hint": "It's a famous city known for the Eiffel Tower.",
+    "correct_answer": "Paris"
+  },
+  {
+    "_id": 2,
+    "question": "Which element has the chemical symbol 'O'?",
+    "hint": "You breathe it to live.",
+    "correct_answer": "Oxygen"
+  },
+  {
+    "_id": 3,
+    "question": "How many days are in a leap year?",
+    "hint": "It's one more than a normal year.",
+    "correct_answer": "366"
+  }
+]
