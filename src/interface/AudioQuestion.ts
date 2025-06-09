@@ -1,3 +1,5 @@
-export default interface AudioQuestion{
-    transcript: string
+// src/interface/AudioQuestion.ts
+export default interface AudioQuestion {
+  _id: string;
+  transcript: string;
 }
