@@ -31,8 +31,9 @@ async function startServer() {
     db = client.db(DB_NAME);
 
     // Start listening for requests only after the DB connection is successful
-    app.listen(PORT, () => {
-      console.log(`🚀 Server is running on http://localhost:${PORT}`);
+     app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server is running and accessible on your network.`);
+      console.log(`   Connect from other devices at: http://192.168.1.122:${PORT}`);
     });
   } catch (error) {
     console.error('❌ Failed to connect to MongoDB.', error);

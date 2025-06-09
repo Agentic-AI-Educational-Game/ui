@@ -28,7 +28,7 @@ export const SCREEN_TYPES = {
 } as const;
 
 export type ScreenType = (typeof SCREEN_TYPES)[keyof typeof SCREEN_TYPES];
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://192.168.1.122:8080/api';
 
 // State and Result Interfaces
 interface QuizState {
