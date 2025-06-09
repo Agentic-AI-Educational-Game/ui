@@ -5,6 +5,7 @@ import { MainMenuScreen } from '../screens/MainMenuScreen';
 import { QcmScreen } from '../screens/QcmScreen';
 import { InputScreen } from '../screens/InputScreen';
 import { AudioScreen } from '../screens/AudioScreen';
+import { ProcessingScreen } from '../screens/ProcessingScreen';
 import { FinalScore } from '../screens/FinalScore';
 
 export const ScreenManager: React.FC = () => {
@@ -12,7 +13,7 @@ export const ScreenManager: React.FC = () => {
     currentScreen,
     navigateToMenu,
     startGame,
-    finalScore,
+    finalResults,
     quizState,
     submitQcmAnswer,
     inputState,
@@ -54,12 +55,14 @@ export const ScreenManager: React.FC = () => {
           key={`audio-${audioState.currentQuestionIndex}`}
         />
       );
+      
+    case SCREEN_TYPES.PROCESSING:
+      return <ProcessingScreen />;
 
     case SCREEN_TYPES.SCORE:
       return (
         <FinalScore
-          finalScore={finalScore}
-          totalQuestions={quizState.totalQuestions + inputState.totalQuestions}
+          results={finalResults}
           playAgain={startGame}
           goToMenu={navigateToMenu}
         />

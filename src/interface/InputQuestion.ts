@@ -1,6 +1,7 @@
+// src/interface/InputQuestion.ts
 export default interface InputQuestion {
-  _id: number;
-  question: string;
-  hint: string;
-  correct_answer: string;
+  _id: string;
+  input_text: string; // The text to be processed by the API
+  question: string; // The question to show the user
+  timestamp: string | null;
 }
