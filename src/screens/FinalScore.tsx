@@ -1,4 +1,3 @@
-// src/screens/FinalScore.tsx
 import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,7 +45,8 @@ export const FinalScore: FC<FinalScoreProps> = ({ results, playAgain, goToMenu }
           <div className="space-y-2 text-left pt-4">
             <ScoreItem label="Multiple Choice" score={results.qcmScoreTotal} />
             <ScoreItem label="Text Answers" score={results.textScoreTotal} />
-            {/* <ScoreItem label="Reading Aloud" score={results.audioScoreTotal  } /> */}
+            {/* --- UNCOMMENTED: This will now display the audio score --- */}
+            <ScoreItem label="Reading Aloud" score={results.audioScoreTotal} />
           </div>
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
             <Button onClick={goToMenu} className="h-14 text-lg font-bold rounded-2xl ...">

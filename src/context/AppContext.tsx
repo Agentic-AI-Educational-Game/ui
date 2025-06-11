@@ -14,7 +14,7 @@ import {
 import type QuestionQcm from '@/interface/QuestionQcm';
 import type AudioQuestion from '@/interface/AudioQuestion';
 import type InputQuestion from '@/interface/InputQuestion';
-import type { TextInputApiResponse } from '@/interface/ApiResponse';
+import type { TextInputApiResponse, AudioApiResponse } from '@/interface/ApiResponse';
 
 export const SCREEN_TYPES = {
   MENU: 'menu',
@@ -29,7 +29,8 @@ export const SCREEN_TYPES = {
 
 export type ScreenType = (typeof SCREEN_TYPES)[keyof typeof SCREEN_TYPES];
 const MONGO_API_BASE_URL = 'http://192.168.3.161:8080/api'; // For fetching questions
-const EVALUATION_API_URL = 'http://192.168.3.161:5000/evaluate_answer'; // For submitting answers
+const TEXT_EVALUATION_API_URL = 'http://192.168.3.161:5000/evaluate_answer'; // For text answers
+const AUDIO_EVALUATION_API_URL = 'http://localhost:5001/evaluate'; // For audio answers
 
 // State and Result Interfaces
 interface QuizState {
@@ -57,7 +58,7 @@ interface AudioState {
 export interface FinalResults {
   qcmScoreTotal: number;
   textScoreTotal: number;
-  // Audio score is now removed from the final results
+  audioScoreTotal: number;
   finalAverageScore: number;
 }
 interface AppContextType {
@@ -73,45 +74,49 @@ interface AppContextType {
   handleAudioSubmitted: (audioBlob: Blob) => void;
 }
 
-// --- UPDATED API FUNCTION ---
-// This now makes a real POST request to your Python/Flask server
-const fetchTextApi = async (body: {
-  text_input: string;
-  question_input: string;
-  student_answer_input: string;
-}): Promise<TextInputApiResponse> => {
-  console.log("Submitting to Evaluation API (non-blocking)...", body);
+// Helper and API Functions
+const parseAudioScore = (scoreString: string): number => {
+  const match = scoreString.match(/(\d+(\.\d+)?)/);
+  return match ? parseFloat(match[0]) : 0;
+};
+
+const fetchTextApi = async (body: any): Promise<TextInputApiResponse> => {
+  console.log("Submitting to TEXT Evaluation API (non-blocking)...", body);
   try {
-    const response = await fetch(EVALUATION_API_URL, {
+    const response = await fetch(TEXT_EVALUATION_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     });
-
     if (!response.ok) {
-      // Handle server errors (e.g., 500 Internal Server Error)
-      throw new Error(`Evaluation API responded with status: ${response.status}`);
+      throw new Error(`Text Evaluation API responded with status: ${response.status}`);
     }
-
     const data: TextInputApiResponse = await response.json();
-    console.log("Evaluation API responded:", data);
     return data;
-
   } catch (error) {
-    console.error("Error submitting to Evaluation API:", error);
-    // Return a default error response so the app doesn't crash
-    return {
-      _id: "error",
-      text: body.text_input,
-      question: body.question_input,
-      student_answer: body.student_answer_input,
-      final_score: 0, // Assign 0 score on error
-      feedback: "Could not evaluate answer.",
-      timestamp: new Date().toISOString(),
-    };
+    console.error("Error submitting to Text Evaluation API:", error);
+    return { _id: "error", text: body.text_input, question: body.question_input, student_answer: body.student_answer_input, final_score: 0, feedback: "Could not evaluate answer.", timestamp: new Date().toISOString() };
   }
+};
+
+const fetchAudioApi = async (formData: FormData): Promise<AudioApiResponse> => {
+    console.log("Submitting to AUDIO Evaluation API (non-blocking)...");
+    try {
+      const response = await fetch(AUDIO_EVALUATION_API_URL, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error(`Audio Evaluation API responded with status: ${response.status}`);
+      }
+      const data: AudioApiResponse = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error submitting to Audio Evaluation API:", error);
+      return { accuracy: "0%", speed: "0 WPM", fluency: "error", pron_feedback: "Could not evaluate audio.", score: "0 / 5", transcript: "Error in processing." };
+    }
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -166,9 +171,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const resetAndInitializeGame = useCallback(() => {
     setApiPromises([]);
     setFinalResults(null);
-    setQuizState({ qcmQuestions, currentQuestionIndex: 0, score: 0, currentQuestion: qcmQuestions[0], isQuizFinished: false, totalQuestions: qcmQuestions.length });
-    setInputState({ inputQuestions, currentQuestionIndex: 0, currentQuestion: inputQuestions[0], isInputFinished: false, totalQuestions: inputQuestions.length });
-    setAudioState({ audioQuestions, currentQuestionIndex: 0, currentQuestion: audioQuestions[0], isAudioFinished: false, totalQuestions: audioQuestions.length });
+    setQuizState({ qcmQuestions, currentQuestionIndex: 0, score: 0, currentQuestion: qcmQuestions.length > 0 ? qcmQuestions[0] : undefined, isQuizFinished: false, totalQuestions: qcmQuestions.length });
+    setInputState({ inputQuestions, currentQuestionIndex: 0, currentQuestion: inputQuestions.length > 0 ? inputQuestions[0] : undefined, isInputFinished: false, totalQuestions: inputQuestions.length });
+    setAudioState({ audioQuestions, currentQuestionIndex: 0, currentQuestion: audioQuestions.length > 0 ? audioQuestions[0] : undefined, isAudioFinished: false, totalQuestions: audioQuestions.length });
   }, [qcmQuestions, inputQuestions, audioQuestions]);
 
   const navigateToMenu = useCallback(() => { resetAndInitializeGame(); setCurrentScreen(SCREEN_TYPES.MENU); }, [resetAndInitializeGame]);
@@ -192,16 +197,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const submitInputAnswer = useCallback((userAnswer: string) => {
     const currentQuestion = inputState.currentQuestion;
     if (!currentQuestion) return;
-    // Create the body in the new required format
     const requestBody = {
       text_input: currentQuestion.input_text,
       question_input: currentQuestion.question,
       student_answer_input: userAnswer,
     };
-    // Call the updated fetchTextApi function
-    const textPromise = fetchTextApi(requestBody)
-      .then(response => ({ type: 'text', score: response.final_score || 0 })); // Use 0 if final_score is null
-
+    const textPromise = fetchTextApi(requestBody).then(response => ({ type: 'text', score: response.final_score || 0 }));
     setApiPromises(prev => [...prev, textPromise]);
     if (inputState.currentQuestionIndex < inputQuestions.length - 1) {
       setInputState(prev => ({ ...prev, currentQuestionIndex: prev.currentQuestionIndex + 1, currentQuestion: inputQuestions[prev.currentQuestionIndex + 1] }));
@@ -211,24 +212,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [inputState, navigateToAudioScreen, inputQuestions]);
 
-  // --- UPDATED AUDIO SUBMISSION ---
   const handleAudioSubmitted = useCallback(async (audioBlob: Blob) => {
-    console.log("Audio submission skipped (under development). Blob size:", audioBlob.size);
-    // Don't make an API call. Just proceed to the next step.
+    if (!audioState.currentQuestion) return;
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.wav');
+    formData.append('expected_text', audioState.currentQuestion.transcript);
+
+    const audioPromise = fetchAudioApi(formData).then(response => ({ type: 'audio', score: parseAudioScore(response.score) }));
+    setApiPromises(prev => [...prev, audioPromise]);
+
     if (audioState.currentQuestionIndex < audioQuestions.length - 1) {
-      setAudioState(prev => ({
-        ...prev,
-        currentQuestionIndex: prev.currentQuestionIndex + 1,
-        currentQuestion: audioQuestions[prev.currentQuestionIndex + 1],
-      }));
+      setAudioState(prev => ({ ...prev, currentQuestionIndex: prev.currentQuestionIndex + 1, currentQuestion: audioQuestions[prev.currentQuestionIndex + 1] }));
     } else {
       setAudioState(prev => ({ ...prev, isAudioFinished: true }));
-      // Since this is the last step, go to processing.
       setCurrentScreen(SCREEN_TYPES.PROCESSING);
     }
   }, [audioState, audioQuestions]);
 
-  // --- UPDATED SCORE CALCULATION ---
   useEffect(() => {
     if (currentScreen === SCREEN_TYPES.PROCESSING) {
       const calculateFinalScores = async () => {
@@ -236,35 +236,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         try {
             const results = await Promise.all(apiPromises);
             let textScoreSum = 0;
+            let audioScoreSum = 0;
             
-            // Only process text scores
             results.forEach(res => {
                 if (res.type === 'text') {
                     textScoreSum += res.score;
+                } else if (res.type === 'audio') {
+                    audioScoreSum += (res.score / 5) * 100;
                 }
             });
 
             const textScoreTotal = inputQuestions.length > 0 ? textScoreSum / inputQuestions.length : 0;
+            const audioScoreTotal = audioQuestions.length > 0 ? audioScoreSum / audioQuestions.length : 0;
             const qcmScoreTotal = qcmQuestions.length > 0 ? (quizState.score / qcmQuestions.length) * 100 : 0;
-            
-            // Average is now only between QCM and Text
-            const finalAverageScore = (qcmScoreTotal + textScoreTotal) / 2;
+            const finalAverageScore = (qcmScoreTotal + textScoreTotal + audioScoreTotal) / 3;
 
             setFinalResults({
                 qcmScoreTotal: Math.round(qcmScoreTotal),
                 textScoreTotal: Math.round(textScoreTotal),
-                finalAverageScore: Math.round(finalAverageScore)
+                audioScoreTotal: Math.round(audioScoreTotal),
+                finalAverageScore: Math.round(finalAverageScore),
             });
         } catch (error) {
             console.error("An error occurred while processing API responses:", error);
-            setFinalResults({ qcmScoreTotal: 0, textScoreTotal: 0,  finalAverageScore: 0 });
+            setFinalResults({ qcmScoreTotal: 0, textScoreTotal: 0, audioScoreTotal: 0, finalAverageScore: 0 });
         } finally {
             navigateToScoreScreen();
         }
       };
       calculateFinalScores();
     }
-  }, [currentScreen, apiPromises, quizState.score, navigateToScoreScreen, inputQuestions.length, qcmQuestions.length]);
+  }, [currentScreen, apiPromises, quizState.score, navigateToScoreScreen, inputQuestions.length, audioQuestions.length, qcmQuestions.length]);
 
   const contextValue: AppContextType = {
     currentScreen,
