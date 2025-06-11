@@ -29,7 +29,7 @@ export const SCREEN_TYPES = {
 
 export type ScreenType = (typeof SCREEN_TYPES)[keyof typeof SCREEN_TYPES];
 const MONGO_API_BASE_URL = 'http://192.168.3.161:8080/api'; // For fetching questions
-const EVALUATION_API_URL = 'http://127.0.0.1:5000/evaluate_answer'; // For submitting answers
+const EVALUATION_API_URL = 'http://192.168.3.161:5000/evaluate_answer'; // For submitting answers
 
 // State and Result Interfaces
 interface QuizState {
