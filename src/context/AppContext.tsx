@@ -112,6 +112,7 @@ const fetchAudioApi = async (formData: FormData): Promise<AudioApiResponse> => {
         throw new Error(`Audio Evaluation API responded with status: ${response.status}`);
       }
       const data: AudioApiResponse = await response.json();
+      console.log(data)
       return data;
     } catch (error) {
       console.error("Error submitting to Audio Evaluation API:", error);
@@ -216,7 +217,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!audioState.currentQuestion) return;
     const formData = new FormData();
     formData.append('audio', audioBlob, 'recording.wav');
-    formData.append('expected_text', audioState.currentQuestion.transcript);
+    formData.append('expected_text', audioState.currentQuestion.texte);
 
     const audioPromise = fetchAudioApi(formData).then(response => ({ type: 'audio', score: parseAudioScore(response.score) }));
     setApiPromises(prev => [...prev, audioPromise]);
@@ -294,6 +295,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppContext);
   if (context === undefined) {

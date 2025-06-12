@@ -17,7 +17,7 @@ const MONGO_URI = process.env.MONGO_URI;
 const DB_NAME = 'db_questions';
 const QCM_COLLECTION = 'qcm_questions';
 const INPUT_COLLECTION = 'generated_questions';
-const AUDIO_COLLECTION = 'audio_text';
+const AUDIO_COLLECTION = 'textes';
 let db; // Variable to hold the database connection
 
 // --- Connect to Database and Start Server ---

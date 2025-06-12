@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import type AudioQuestion from '../interface/AudioQuestion';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-
+import { Badge } from "@/components/ui/badge"
 interface AudioScreenProps {
   question: AudioQuestion;
   onRecordingSubmitted: (audioBlob: Blob) => void;
@@ -38,11 +38,13 @@ export const AudioScreen: React.FC<AudioScreenProps> = ({
         <CardHeader className="text-center">
           <CardTitle className="text-3xl md:text-4xl font-bold text-purple-800" style={{ fontFamily: "'Fredoka One', cursive" }}>
             Let's Read Aloud!
+            <br />
+            <Badge>{question.difficulty}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="bg-white/80 p-5 rounded-2xl shadow-inner max-h-48 overflow-y-auto">
-            <p className="text-xl text-center font-semibold text-slate-800 leading-relaxed">{question.transcript}</p>
+            <p className="text-xl text-center font-semibold text-slate-800 leading-relaxed">{question.texte}</p>
           </div>
           
           <AudioRecorder onRecordingComplete={handleRecordingComplete} />
