@@ -30,7 +30,7 @@ export const SCREEN_TYPES = {
 export type ScreenType = (typeof SCREEN_TYPES)[keyof typeof SCREEN_TYPES];
 const MONGO_API_BASE_URL = 'http://192.168.3.161:8080/api'; // For fetching questions
 const TEXT_EVALUATION_API_URL = 'http://192.168.3.161:5000/evaluate_answer'; // For text answers
-const AUDIO_EVALUATION_API_URL = 'http://localhost:5001/evaluate'; // For audio answers
+const AUDIO_EVALUATION_API_URL = 'http://192.168.3.161:5001/evaluate'; // For audio answers
 
 // State and Result Interfaces
 interface QuizState {
@@ -177,7 +177,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [qcmQuestions, inputQuestions, audioQuestions]);
 
   const navigateToMenu = useCallback(() => { resetAndInitializeGame(); setCurrentScreen(SCREEN_TYPES.MENU); }, [resetAndInitializeGame]);
-  const startGame = useCallback(() => { resetAndInitializeGame(); setCurrentScreen(SCREEN_TYPES.QCM); }, [resetAndInitializeGame]);
+  const startGame = useCallback(() => { resetAndInitializeGame(); setCurrentScreen(SCREEN_TYPES.AUDIO); }, [resetAndInitializeGame]);
   const navigateToInputScreen = useCallback(() => setCurrentScreen(SCREEN_TYPES.INPUT), []);
   const navigateToAudioScreen = useCallback(() => setCurrentScreen(SCREEN_TYPES.AUDIO), []);
   const navigateToScoreScreen = useCallback(() => setCurrentScreen(SCREEN_TYPES.SCORE), []);
