@@ -1,10 +1,11 @@
-// src/screens/InputScreen.tsx
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import type InputQuestion from '../interface/InputQuestion';
 import { motion } from 'framer-motion';
+import { HintModal } from '../components/HintModal'; // Import the new modal
+import { BookText } from 'lucide-react'; // Import a different icon for this button
 
 interface InputScreenProps {
   question: InputQuestion;
@@ -18,6 +19,7 @@ export const InputScreen: React.FC<InputScreenProps> = ({
   onNavigateBack,
 }) => {
   const [userAnswer, setUserAnswer] = useState('');
+  const [isHintVisible, setIsHintVisible] = useState(false); // State for the modal
 
   const handleSubmit = () => {
     const trimmedAnswer = userAnswer.trim();
@@ -37,9 +39,20 @@ export const InputScreen: React.FC<InputScreenProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="bg-white/80 p-5 rounded-2xl shadow-inner">
-            {/* ONLY THE QUESTION IS SHOWN HERE */}
             <p className="text-xl text-center font-semibold text-slate-800 leading-relaxed">{question.question}</p>
           </div>
+          
+          {/* --- NEW HINT BUTTON --- */}
+          {question.input_text && (
+            <div className="text-center">
+                <Button variant="outline" onClick={() => setIsHintVisible(true)} className="bg-orange-200 border-orange-300 text-orange-800 hover:bg-orange-300">
+                    <BookText className="mr-2 h-4 w-4" />
+                    Show Context
+                </Button>
+            </div>
+          )}
+          {/* --- END NEW HINT BUTTON --- */}
+
           <div className="space-y-4 pt-2">
             <Input
               type="text"
@@ -65,6 +78,16 @@ export const InputScreen: React.FC<InputScreenProps> = ({
           </Button>
         </CardFooter>
       </Card>
+      
+      {/* --- RENDER THE MODAL --- */}
+      <HintModal
+        isOpen={isHintVisible}
+        onClose={() => setIsHintVisible(false)}
+        title="Context Text"
+        content={question.input_text}
+      />
+      {/* --- END RENDER THE MODAL --- */}
+
     </motion.div>
   );
 };

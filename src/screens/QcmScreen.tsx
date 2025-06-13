@@ -1,9 +1,10 @@
-// src/screens/QcmScreen.tsx
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type QuestionQcm from '../interface/QuestionQcm';
 import { motion } from 'framer-motion';
+import { HintModal } from '../components/HintModal'; // Import the new modal
+import { Lightbulb } from 'lucide-react'; // Import an icon for the button
 
 interface QcmScreenProps {
   question: QuestionQcm;
@@ -32,6 +33,7 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
 }) => {
   const [selectedChoiceKey, setSelectedChoiceKey] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [isHintVisible, setIsHintVisible] = useState(false); // State for the modal
   const choices = getChoicesFromQuestion(question);
 
   const handleSelectAndSubmit = (choiceKey: string) => {
@@ -56,6 +58,18 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
           <div className="bg-white/80 p-5 rounded-2xl shadow-inner">
             <p className="text-xl text-center font-semibold text-slate-800 leading-relaxed">{question.question}</p>
           </div>
+          
+          {/* --- NEW HINT BUTTON --- */}
+          {question.source_text && (
+            <div className="text-center">
+                <Button variant="outline" onClick={() => setIsHintVisible(true)} className="bg-blue-200 border-blue-300 text-blue-800 hover:bg-blue-300">
+                    <Lightbulb className="mr-2 h-4 w-4" />
+                    Show Source Text
+                </Button>
+            </div>
+          )}
+          {/* --- END NEW HINT BUTTON --- */}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {choices.map(([label, text]) => {
               const isSelected = selectedChoiceKey === label;
@@ -95,6 +109,15 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
             </Button>
         </CardFooter>
       </Card>
+
+      {/* --- RENDER THE MODAL --- */}
+      <HintModal
+        isOpen={isHintVisible}
+        onClose={() => setIsHintVisible(false)}
+        title="Source Text"
+        content={question.source_text}
+      />
+      {/* --- END RENDER THE MODAL --- */}
     </motion.div>
   );
 };
