@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createContext, useContext, useCallback, useState, type ReactNode } from 'react';
+import { createContext, useContext, useCallback, useState, type ReactNode, useEffect } from 'react';
 import { useQuiz } from './QuizContext';
 import { useData } from './DataContext';
 import { useAuth } from './AuthContext';
@@ -13,6 +13,7 @@ export const SCREEN_TYPES = {
   LOGIN: 'login',
   REGISTER: 'register',
   TEACHER_DASHBOARD: 'teacher_dashboard',
+  STORY: 'story', // --- NEW: Add the Story screen type ---
   MENU: 'menu',
   QCM: 'qcm',
   INPUT: 'input',
@@ -28,6 +29,7 @@ export type ScreenType = (typeof SCREEN_TYPES)[keyof typeof SCREEN_TYPES];
 interface AppContextType {
   currentScreen: ScreenType;
   navigateToMenu: () => void;
+  navigateToStory: () => void; // --- NEW: Add function to navigate to the story ---
   startGame: () => void;
   advanceToNextScreen: () => void;
   handleFinalSubmission: (promises: Promise<any>[]) => void;
@@ -43,6 +45,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     resetAndInitializeGame();
     setCurrentScreen(SCREEN_TYPES.MENU);
   }, [resetAndInitializeGame]);
+
+  // --- NEW: Function to explicitly go to the story screen ---
+  const navigateToStory = useCallback(() => {
+    setCurrentScreen(SCREEN_TYPES.STORY);
+  }, []);
 
   const startGame = useCallback(() => {
     resetAndInitializeGame();
@@ -63,7 +70,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [calculateFinalScores]);
 
 
-  const value = { currentScreen, navigateToMenu, startGame, advanceToNextScreen, handleFinalSubmission };
+  const value = { currentScreen, navigateToMenu, navigateToStory, startGame, advanceToNextScreen, handleFinalSubmission };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
@@ -74,20 +81,26 @@ export const useAppContext = (): AppContextType => {
   return context;
 };
 
-// --- CORRECTED HELPER FUNCTION ---
 const isQuizScreen = (screen: ScreenType) => {
-    // We explicitly type the array to satisfy TypeScript's strict checking.
     const quizScreens: ScreenType[] = [SCREEN_TYPES.QCM, SCREEN_TYPES.INPUT, SCREEN_TYPES.AUDIO];
     return quizScreens.includes(screen);
 }
-// --- END CORRECTION ---
 
 export const AppFlowManager: React.FC = () => {
     const { isLoading, error } = useData();
     const { currentUser } = useAuth();
-    const { currentScreen } = useAppContext();
+    const { currentScreen, navigateToStory } = useAppContext(); // Get navigateToStory
     const { totalProgress } = useQuiz();
     const [authScreen, setAuthScreen] = useState<'login' | 'register'>('login');
+
+    // --- NEW: This useEffect hook triggers the story screen on login ---
+    useEffect(() => {
+      // When a user logs in (currentUser changes from null to a student object), navigate to the story
+      if (currentUser && currentUser.role === 'student' && !sessionStorage.getItem('story_seen')) {
+        navigateToStory();
+        sessionStorage.setItem('story_seen', 'true'); // Prevent story from showing on page refresh
+      }
+    }, [currentUser, navigateToStory]);
 
     if (isLoading) {
       return <div className="flex items-center justify-center h-screen text-white text-2xl font-bold">Loading Game...</div>;
@@ -98,6 +111,8 @@ export const AppFlowManager: React.FC = () => {
     }
 
     if (!currentUser) {
+        // Clear the session storage on logout so the story shows again for the next user
+        sessionStorage.removeItem('story_seen');
         if (authScreen === 'login') {
             return <LoginScreen switchToRegister={() => setAuthScreen('register')} />;
         }

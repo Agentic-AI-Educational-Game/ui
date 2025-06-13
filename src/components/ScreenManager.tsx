@@ -1,8 +1,8 @@
-// src/components/ScreenManager.tsx
 import React from 'react';
 import { useAppContext, SCREEN_TYPES } from '../context/AppContext';
 import { useQuiz } from '../context/QuizContext';
 import { MainMenuScreen } from '../screens/MainMenuScreen';
+import { StoryScreen } from '../screens/StoryScreen'; // --- NEW: Import StoryScreen ---
 import { QcmScreen } from '../screens/QcmScreen';
 import { InputScreen } from '../screens/InputScreen';
 import { AudioScreen } from '../screens/AudioScreen';
@@ -18,6 +18,10 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({ currentScreen }) =
   const { quizState, inputState, audioState, finalResults, submitQcmAnswer, submitInputAnswer, handleAudioSubmitted } = useQuiz();
 
   switch (currentScreen) {
+    // --- NEW: Add the case for the story screen ---
+    case SCREEN_TYPES.STORY:
+      return <StoryScreen onComplete={navigateToMenu} />; // When story is done, go to menu
+
     case SCREEN_TYPES.MENU:
       return <MainMenuScreen startGame={startGame} />;
 
@@ -64,6 +68,7 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({ currentScreen }) =
       );
 
     default:
+      // If something goes wrong, default to the menu
       return <MainMenuScreen startGame={startGame} />;
   }
 };
