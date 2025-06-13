@@ -1,8 +1,9 @@
+// src/screens/FinalScore.tsx
 import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import type { FinalResults } from '../context/AppContext';
+import type { FinalResults } from '../context/QuizContext'; // Import from QuizContext now
 
 interface FinalScoreProps {
   results: FinalResults | null;
@@ -45,14 +46,15 @@ export const FinalScore: FC<FinalScoreProps> = ({ results, playAgain, goToMenu }
           <div className="space-y-2 text-left pt-4">
             <ScoreItem label="Multiple Choice" score={results.qcmScoreTotal} />
             <ScoreItem label="Text Answers" score={results.textScoreTotal} />
-            {/* --- UNCOMMENTED: This will now display the audio score --- */}
-            <ScoreItem label="Reading Aloud" score={results.audioScoreTotal} />
+            <ScoreItem label="Reading Accuracy" score={results.audioAccuracyTotal} />
+            {/* FIX: Removed the incorrect negative sign */}
+            <ScoreItem label="Reading Pronunciation" score={results.audioPronunciationTotal} />
           </div>
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
-            <Button onClick={goToMenu} className="h-14 text-lg font-bold rounded-2xl ...">
+            <Button onClick={goToMenu} className="h-14 text-lg font-bold rounded-2xl bg-slate-300 border-b-8 border-slate-400 text-slate-700 hover:bg-slate-200">
               Go Home
             </Button>
-            <Button onClick={playAgain} className="h-14 text-lg font-bold rounded-2xl ...">
+            <Button onClick={playAgain} className="h-14 text-lg font-bold rounded-2xl bg-orange-400 border-b-8 border-orange-600 text-white hover:bg-orange-300">
               Play Again!
             </Button>
           </div>

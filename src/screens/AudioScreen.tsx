@@ -6,6 +6,7 @@ import type AudioQuestion from '../interface/AudioQuestion';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { Badge } from "@/components/ui/badge"
+
 interface AudioScreenProps {
   question: AudioQuestion;
   onRecordingSubmitted: (audioBlob: Blob) => void;
@@ -22,7 +23,7 @@ export const AudioScreen: React.FC<AudioScreenProps> = ({
 
   const handleRecordingComplete = (wavBlob: Blob) => {
     setRecordedAudio(wavBlob);
-    setIsSubmitted(false); // Allow re-submission if user re-records
+    setIsSubmitted(false);
   };
 
   const handleSubmitRecording = () => {
@@ -39,11 +40,13 @@ export const AudioScreen: React.FC<AudioScreenProps> = ({
           <CardTitle className="text-3xl md:text-4xl font-bold text-purple-800" style={{ fontFamily: "'Fredoka One', cursive" }}>
             Let's Read Aloud!
             <br />
-            <Badge>{question.difficulty}</Badge>
+            {/* FIX: Use `niveau` as defined in your AudioQuestion interface */}
+            <Badge>{question.niveau}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="bg-white/80 p-5 rounded-2xl shadow-inner max-h-48 overflow-y-auto">
+            {/* FIX: Use `texte` as defined in your AudioQuestion interface */}
             <p className="text-xl text-center font-semibold text-slate-800 leading-relaxed">{question.texte}</p>
           </div>
           

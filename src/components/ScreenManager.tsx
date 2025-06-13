@@ -1,6 +1,7 @@
 // src/components/ScreenManager.tsx
 import React from 'react';
 import { useAppContext, SCREEN_TYPES } from '../context/AppContext';
+import { useQuiz } from '../context/QuizContext';
 import { MainMenuScreen } from '../screens/MainMenuScreen';
 import { QcmScreen } from '../screens/QcmScreen';
 import { InputScreen } from '../screens/InputScreen';
@@ -8,19 +9,13 @@ import { AudioScreen } from '../screens/AudioScreen';
 import { ProcessingScreen } from '../screens/ProcessingScreen';
 import { FinalScore } from '../screens/FinalScore';
 
-export const ScreenManager: React.FC = () => {
-  const {
-    currentScreen,
-    navigateToMenu,
-    startGame,
-    finalResults,
-    quizState,
-    submitQcmAnswer,
-    inputState,
-    submitInputAnswer,
-    audioState,
-    handleAudioSubmitted,
-  } = useAppContext();
+interface ScreenManagerProps {
+    currentScreen: (typeof SCREEN_TYPES)[keyof typeof SCREEN_TYPES];
+}
+
+export const ScreenManager: React.FC<ScreenManagerProps> = ({ currentScreen }) => {
+  const { navigateToMenu, startGame, advanceToNextScreen, handleFinalSubmission } = useAppContext();
+  const { quizState, inputState, audioState, finalResults, submitQcmAnswer, submitInputAnswer, handleAudioSubmitted } = useQuiz();
 
   switch (currentScreen) {
     case SCREEN_TYPES.MENU:
@@ -30,9 +25,9 @@ export const ScreenManager: React.FC = () => {
       return (
         <QcmScreen
           question={quizState.currentQuestion!}
-          onAnswer={submitQcmAnswer}
+          onAnswer={(choice) => submitQcmAnswer(choice, advanceToNextScreen)}
           onNavigateBack={navigateToMenu}
-          key={`qcm-${quizState.currentQuestionIndex}`}
+          key={`qcm-${quizState.currentQuestion?._id ?? quizState.currentQuestionIndex}`}
         />
       );
 
@@ -40,9 +35,9 @@ export const ScreenManager: React.FC = () => {
       return (
         <InputScreen
           question={inputState.currentQuestion!}
-          onAnswerSubmit={submitInputAnswer}
+          onAnswerSubmit={(answer) => submitInputAnswer(answer, advanceToNextScreen)}
           onNavigateBack={navigateToMenu}
-          key={`input-${inputState.currentQuestionIndex}`}
+          key={`input-${inputState.currentQuestion?._id ?? inputState.currentQuestionIndex}`}
         />
       );
 
@@ -50,9 +45,9 @@ export const ScreenManager: React.FC = () => {
       return (
         <AudioScreen
           question={audioState.currentQuestion!}
-          onRecordingSubmitted={handleAudioSubmitted}
+          onRecordingSubmitted={(blob) => handleAudioSubmitted(blob, handleFinalSubmission)}
           onNavigateBack={navigateToMenu}
-          key={`audio-${audioState.currentQuestionIndex}`}
+          key={`audio-${audioState.currentQuestion?._id ?? audioState.currentQuestionIndex}`}
         />
       );
       

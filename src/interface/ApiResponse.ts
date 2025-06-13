@@ -1,4 +1,3 @@
-// src/interface/ApiResponse.ts
 export interface TextInputApiResponse {
   _id: string;
   text: string;
@@ -10,10 +9,10 @@ export interface TextInputApiResponse {
 }
 
 export interface AudioApiResponse {
-  accuracy: string;
+  accuracy: string | number; // Can be "18.37" or "18.37%"
   speed: string;
   fluency: string;
   pron_feedback: string;
-  score: string;
+  score: number;
   transcript: string;
 }

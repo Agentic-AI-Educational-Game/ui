@@ -1,20 +1,25 @@
-import { AppProvider } from './context/AppContext';
-import { ScreenManager } from './components/ScreenManager';
-
-const BACKGROUND_IMAGE_URL = 'assets/background.png';
+// src/App.tsx
+import { AppFlowManager, AppProvider } from './context/AppContext';
+import { DataProvider } from './context/DataContext';
+import { QuizProvider } from './context/QuizContext';
 
 function App() {
   return (
-    <AppProvider> {/* Wrap the app with the context provider */}
-      <div
-        className="min-h-screen w-full flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat p-4 sm:p-6 md:p-8"
-        style={{ backgroundImage: `url(${BACKGROUND_IMAGE_URL})` }}
-      >
-        <div className="w-full max-w-3xl flex justify-center">
-          <ScreenManager /> {/* ScreenManager handles rendering the active screen */}
-        </div>
-      </div>
-    </AppProvider>
+    <DataProvider>
+      <QuizProvider>
+        <AppProvider>
+          <div className="min-h-screen w-full flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat p-4 sm:p-6 md:p-8"
+          style={{
+      backgroundImage: "url('/assets/background.png')"
+    }}
+          >
+            <div className="w-full max-w-3xl flex justify-center" >
+              <AppFlowManager />
+            </div>
+          </div>
+        </AppProvider>
+      </QuizProvider>
+    </DataProvider>
   );
 }
 
