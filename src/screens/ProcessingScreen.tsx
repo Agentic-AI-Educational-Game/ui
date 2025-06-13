@@ -1,4 +1,3 @@
-// src/screens/ProcessingScreen.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ export const ProcessingScreen: React.FC = () => {
       <Card className="w-full max-w-md text-center bg-sky-100/90 backdrop-blur-sm border-4 border-sky-400 shadow-2xl rounded-3xl p-8">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-sky-800" style={{ fontFamily: "'Fredoka One', cursive" }}>
-            Calculating Your Score...
+            Calcul de votre score...
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center gap-6">
@@ -19,7 +18,7 @@ export const ProcessingScreen: React.FC = () => {
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           />
           <p className="text-lg text-sky-700 font-semibold">
-            Just a moment while we gather your results!
+            Un instant, nous préparons vos résultats !
           </p>
         </CardContent>
       </Card>

@@ -23,9 +23,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ switchToRegister }) =>
     setError('');
     try {
       await login({ username, password });
-      // On successful login, the AppFlowManager will handle the redirect.
     } catch (err: any) {
-      setError(err.message || 'Failed to log in. Please check your credentials.');
+      setError(err.message || 'La connexion a échoué. Veuillez vérifier vos identifiants.');
     } finally {
       setIsLoading(false);
     }
@@ -36,7 +35,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ switchToRegister }) =>
       <Card className="w-full max-w-sm bg-white/90 backdrop-blur-sm border-2 border-gray-200 shadow-xl rounded-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-gray-800" style={{ fontFamily: "'Fredoka One', cursive" }}>
-            Welcome Back!
+            Bon Retour !
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -44,7 +43,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ switchToRegister }) =>
             {error && <p className="text-red-500 bg-red-100 p-3 rounded-lg text-sm">{error}</p>}
             <Input
               type="text"
-              placeholder="Username"
+              placeholder="Nom d'utilisateur"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -52,20 +51,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ switchToRegister }) =>
             />
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="Mot de passe"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               className="h-12 text-lg"
             />
             <Button type="submit" className="w-full h-12 text-lg font-bold" disabled={isLoading}>
-              {isLoading ? 'Logging In...' : 'Log In'}
+              {isLoading ? 'Connexion...' : 'Se connecter'}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <Button variant="link" onClick={switchToRegister}>
-            Don't have an account? Register
+            Pas de compte ? S'inscrire
           </Button>
         </CardFooter>
       </Card>

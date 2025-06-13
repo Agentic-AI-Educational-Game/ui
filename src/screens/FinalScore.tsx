@@ -1,9 +1,8 @@
-// src/screens/FinalScore.tsx
 import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import type { FinalResults } from '../context/QuizContext'; // Import from QuizContext now
+import type { FinalResults } from '../context/QuizContext';
 
 interface FinalScoreProps {
   results: FinalResults | null;
@@ -22,7 +21,7 @@ export const FinalScore: FC<FinalScoreProps> = ({ results, playAgain, goToMenu }
   if (!results) {
     return (
       <Card className="w-full max-w-md text-center p-8">
-        <CardTitle>Loading results...</CardTitle>
+        <CardTitle>Chargement des résultats...</CardTitle>
       </Card>
     );
   }
@@ -35,27 +34,26 @@ export const FinalScore: FC<FinalScoreProps> = ({ results, playAgain, goToMenu }
             🌟
           </motion.div>
           <CardTitle className="text-4xl font-bold text-amber-800" style={{ fontFamily: "'Fredoka One', cursive" }}>
-            Great Job!
+            Excellent Travail !
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-xl text-amber-700 font-semibold">Your Final Score Is</p>
+          <p className="text-xl text-amber-700 font-semibold">Votre Score Final Est</p>
           <p className="text-8xl font-bold text-green-600 drop-shadow-lg">
             {results.finalAverageScore}
           </p>
           <div className="space-y-2 text-left pt-4">
-            <ScoreItem label="Multiple Choice" score={results.qcmScoreTotal} />
-            <ScoreItem label="Text Answers" score={results.textScoreTotal} />
-            <ScoreItem label="Reading Accuracy" score={results.audioAccuracyTotal} />
-            {/* FIX: Removed the incorrect negative sign */}
-            <ScoreItem label="Reading Pronunciation" score={results.audioPronunciationTotal} />
+            <ScoreItem label="Choix Multiple (QCM)" score={results.qcmScoreTotal} />
+            <ScoreItem label="Réponses Textuelles" score={results.textScoreTotal} />
+            <ScoreItem label="Précision de Lecture" score={results.audioAccuracyTotal} />
+            <ScoreItem label="Prononciation" score={results.audioPronunciationTotal} />
           </div>
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
             <Button onClick={goToMenu} className="h-14 text-lg font-bold rounded-2xl bg-slate-300 border-b-8 border-slate-400 text-slate-700 hover:bg-slate-200">
-              Go Home
+              Menu Principal
             </Button>
             <Button onClick={playAgain} className="h-14 text-lg font-bold rounded-2xl bg-orange-400 border-b-8 border-orange-600 text-white hover:bg-orange-300">
-              Play Again!
+              Rejouer !
             </Button>
           </div>
         </CardContent>

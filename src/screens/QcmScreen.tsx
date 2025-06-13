@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type QuestionQcm from '../interface/QuestionQcm';
 import { motion } from 'framer-motion';
-import { HintModal } from '../components/HintModal'; // Import the new modal
-import { Lightbulb } from 'lucide-react'; // Import an icon for the button
+import { HintModal } from '../components/HintModal';
+import { Lightbulb } from 'lucide-react';
 
 interface QcmScreenProps {
   question: QuestionQcm;
@@ -33,7 +33,7 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
 }) => {
   const [selectedChoiceKey, setSelectedChoiceKey] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [isHintVisible, setIsHintVisible] = useState(false); // State for the modal
+  const [isHintVisible, setIsHintVisible] = useState(false);
   const choices = getChoicesFromQuestion(question);
 
   const handleSelectAndSubmit = (choiceKey: string) => {
@@ -51,7 +51,7 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
       <Card className="w-full max-w-lg bg-blue-100/80 backdrop-blur-sm border-4 border-blue-400 shadow-2xl rounded-3xl p-2 sm:p-4">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-blue-800" style={{ fontFamily: "'Fredoka One', cursive" }}>
-            Pick One!
+            Faites un choix !
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -59,16 +59,14 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
             <p className="text-xl text-center font-semibold text-slate-800 leading-relaxed">{question.question}</p>
           </div>
           
-          {/* --- NEW HINT BUTTON --- */}
           {question.source_text && (
             <div className="text-center">
                 <Button variant="outline" onClick={() => setIsHintVisible(true)} className="bg-blue-200 border-blue-300 text-blue-800 hover:bg-blue-300">
                     <Lightbulb className="mr-2 h-4 w-4" />
-                    Show Source Text
+                    Afficher le Texte Source
                 </Button>
             </div>
           )}
-          {/* --- END NEW HINT BUTTON --- */}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {choices.map(([label, text]) => {
@@ -105,19 +103,17 @@ export const QcmScreen: React.FC<QcmScreenProps> = ({
         </CardContent>
         <CardFooter className="flex justify-center pt-4">
             <Button onClick={onNavigateBack} variant="link" className="text-blue-600 font-semibold">
-                Back to Menu
+                Retour au menu
             </Button>
         </CardFooter>
       </Card>
 
-      {/* --- RENDER THE MODAL --- */}
       <HintModal
         isOpen={isHintVisible}
         onClose={() => setIsHintVisible(false)}
-        title="Source Text"
+        title="Texte Source"
         content={question.source_text}
       />
-      {/* --- END RENDER THE MODAL --- */}
     </motion.div>
   );
 };

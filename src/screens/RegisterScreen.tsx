@@ -24,9 +24,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ switchToLogin })
     setError('');
     try {
       await register({ username, password, role });
-      // On successful registration, AppFlowManager will handle the redirect.
     } catch (err: any) {
-      setError(err.message || 'Failed to register. Please try another username.');
+      setError(err.message || "L'inscription a échoué. Veuillez essayer un autre nom d'utilisateur.");
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +36,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ switchToLogin })
       <Card className="w-full max-w-sm bg-white/90 backdrop-blur-sm border-2 border-gray-200 shadow-xl rounded-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-gray-800" style={{ fontFamily: "'Fredoka One', cursive" }}>
-            Create Account
+            Créer un compte
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -45,7 +44,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ switchToLogin })
             {error && <p className="text-red-500 bg-red-100 p-3 rounded-lg text-sm">{error}</p>}
             <Input
               type="text"
-              placeholder="Username"
+              placeholder="Nom d'utilisateur"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -53,24 +52,24 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ switchToLogin })
             />
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="Mot de passe"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               className="h-12 text-lg"
             />
             <div className="flex gap-4">
-                <Button type="button" onClick={() => setRole('student')} className={`flex-1 h-12 text-lg ${role === 'student' ? 'bg-blue-600' : 'bg-gray-400'}`}>I am a Student</Button>
-                <Button type="button" onClick={() => setRole('teacher')} className={`flex-1 h-12 text-lg ${role === 'teacher' ? 'bg-green-600' : 'bg-gray-400'}`}>I am a Teacher</Button>
+                <Button type="button" onClick={() => setRole('student')} className={`flex-1 h-12 text-lg ${role === 'student' ? 'bg-blue-600' : 'bg-gray-400'}`}>Je suis un(e) Élève</Button>
+                <Button type="button" onClick={() => setRole('teacher')} className={`flex-1 h-12 text-lg ${role === 'teacher' ? 'bg-green-600' : 'bg-gray-400'}`}>Je suis un(e) Professeur</Button>
             </div>
             <Button type="submit" className="w-full h-12 text-lg font-bold" disabled={isLoading}>
-              {isLoading ? 'Creating Account...' : 'Register'}
+              {isLoading ? 'Création...' : "S'inscrire"}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <Button variant="link" onClick={switchToLogin}>
-            Already have an account? Log in
+            Déjà un compte ? Se connecter
           </Button>
         </CardFooter>
       </Card>

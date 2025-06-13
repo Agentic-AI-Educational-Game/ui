@@ -10,7 +10,6 @@ interface StudentScoreDetailModalProps {
   onClose: () => void;
 }
 
-// A helper component for each score item to keep the code clean
 const ScoreDetailItem: React.FC<{ icon: React.ElementType, label: string, score: number }> = ({ icon: Icon, label, score }) => (
     <div className="flex items-center justify-between p-3 bg-slate-100 rounded-lg">
         <div className="flex items-center gap-3">
@@ -44,31 +43,31 @@ export const StudentScoreDetailModal: React.FC<StudentScoreDetailModalProps> = (
               <CardHeader className="flex flex-row items-start justify-between">
                 <div>
                     <CardTitle className="text-2xl font-bold text-gray-800">
-                        {student.username}'s Score Details
+                        Détails du score de {student.username}
                     </CardTitle>
                     <p className="text-green-600 font-semibold flex items-center gap-2 mt-1">
                         <CheckCircle className="h-5 w-5" />
-                        Quiz Completed
+                        Quiz Terminé
                     </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close modal">
+                <Button variant="ghost" size="icon" onClick={onClose} aria-label="Fermer la fenêtre">
                   <X className="h-6 w-6" />
                 </Button>
               </CardHeader>
               <CardContent className="space-y-3">
                 {student.score ? (
                     <>
-                        <ScoreDetailItem icon={Brain} label="Multiple Choice (QCM)" score={student.score.qcmScoreTotal} />
-                        <ScoreDetailItem icon={Type} label="Text Answers" score={student.score.textScoreTotal} />
-                        <ScoreDetailItem icon={Mic} label="Pronunciation" score={student.score.audioPronunciationTotal} />
-                        <ScoreDetailItem icon={Target} label="Reading Accuracy" score={student.score.audioAccuracyTotal} />
+                        <ScoreDetailItem icon={Brain} label="Choix Multiple (QCM)" score={student.score.qcmScoreTotal} />
+                        <ScoreDetailItem icon={Type} label="Réponses Textuelles" score={student.score.textScoreTotal} />
+                        <ScoreDetailItem icon={Mic} label="Prononciation" score={student.score.audioPronunciationTotal} />
+                        <ScoreDetailItem icon={Target} label="Précision de Lecture" score={student.score.audioAccuracyTotal} />
                     </>
                 ) : (
-                    <p className="text-center text-slate-500 py-8">No score details available.</p>
+                    <p className="text-center text-slate-500 py-8">Aucun détail de score disponible.</p>
                 )}
               </CardContent>
               <CardFooter className="flex justify-end">
-                  <Button onClick={onClose} className="h-11 text-base">Close</Button>
+                  <Button onClick={onClose} className="h-11 text-base">Fermer</Button>
               </CardFooter>
             </Card>
           </motion.div>
