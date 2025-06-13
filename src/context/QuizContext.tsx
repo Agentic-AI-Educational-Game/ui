@@ -111,7 +111,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         results.forEach(res => {
             if (res.type === 'text') { textScoreSum += res.score; } 
             else if (res.type === 'audio') {
-                audioPronunciationSum += (res.pronunciationScore / 5) * 100;
+                audioPronunciationSum += (res.pronunciationScore / 10) * 100;
                 audioAccuracySum += res.accuracyScore;
             }
         });
