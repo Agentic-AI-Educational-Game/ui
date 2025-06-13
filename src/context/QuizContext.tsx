@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/context/QuizContext.tsx
 import { createContext, useContext, useState, useCallback, type ReactNode, useRef } from 'react';
 import { useData } from './DataContext';
+import { useAuth } from './AuthContext'; // Import useAuth
 import { submitTextAnswerForEvaluation, submitAudioForEvaluation, parseAudioScore, parseAccuracyScore } from '@/services/api';
 import type QuestionQcm from '@/interface/QuestionQcm';
 import type AudioQuestion from '@/interface/AudioQuestion';
@@ -33,6 +33,7 @@ const initialAudioState: AudioState = { audioQuestions: [], currentQuestionIndex
 
 export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { qcmQuestions, inputQuestions, audioQuestions } = useData();
+  const { currentUser, updateScore } = useAuth(); // Get user and update function
 
   const [quizState, setQuizState] = useState<QuizState>(initialQuizState);
   const [inputState, setInputState] = useState<InputState>(initialInputState);
@@ -121,20 +122,28 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         const finalAverageScore = (qcmScoreTotal + textScoreTotal + audioPronunciationTotal + audioAccuracyTotal) / 4;
 
-        setFinalResults({
+        const finalResultsData: FinalResults = {
             qcmScoreTotal: Math.round(qcmScoreTotal),
             textScoreTotal: Math.round(textScoreTotal),
             audioPronunciationTotal: Math.round(audioPronunciationTotal),
             audioAccuracyTotal: Math.round(audioAccuracyTotal),
             finalAverageScore: Math.round(finalAverageScore),
-        });
+        };
+
+        setFinalResults(finalResultsData);
+        
+        if (currentUser && currentUser.role === 'student') {
+            await updateScore(currentUser._id, finalResultsData);
+            console.log('✅ Final score saved to database for user:', currentUser.username);
+        }
+
     } catch (error) {
         console.error("An error occurred while processing API responses:", error);
         setFinalResults({ qcmScoreTotal: 0, textScoreTotal: 0, audioPronunciationTotal: 0, audioAccuracyTotal: 0, finalAverageScore: 0 });
     } finally {
         onComplete();
     }
-  }, [quizState.score, inputQuestions.length, audioQuestions.length, qcmQuestions.length]);
+  }, [quizState.score, inputQuestions.length, audioQuestions.length, qcmQuestions.length, currentUser, updateScore]);
 
  const value = { quizState, inputState, audioState, finalResults, resetAndInitializeGame, submitQcmAnswer, submitInputAnswer, handleAudioSubmitted, calculateFinalScores };
 

@@ -1,12 +1,62 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { TextInputApiResponse, AudioApiResponse } from '@/interface/ApiResponse';
+import type { User } from '@/context/AuthContext';
+import type { FinalResults } from '@/context/QuizContext';
 
 const MONGO_API_BASE_URL = 'http://localhost:8080/api';
 const TEXT_EVALUATION_API_URL = 'http://localhost:5000/evaluate_answer';
-const AUDIO_EVALUATION_API_URL = 'http://localhost:5002/evaluate'; // Corrected to match your context
+const AUDIO_EVALUATION_API_URL = 'http://localhost:5002/evaluate';
 
-/**
- * Fetches all initial question data from the MongoDB backend.
- */
+// --- NEW AUTH AND USER FUNCTIONS ---
+
+export const loginUser = async (credentials: any): Promise<User> => {
+  const response = await fetch(`${MONGO_API_BASE_URL}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(credentials),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Login failed');
+  }
+  return response.json();
+};
+
+export const registerUser = async (userData: any): Promise<User> => {
+  const response = await fetch(`${MONGO_API_BASE_URL}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Registration failed');
+  }
+  return response.json();
+};
+
+export const fetchAllStudents = async (): Promise<User[]> => {
+    const response = await fetch(`${MONGO_API_BASE_URL}/students`);
+    if(!response.ok) {
+        throw new Error('Could not fetch student list.');
+    }
+    return response.json();
+}
+
+export const updateStudentScore = async (userId: string, finalResults: FinalResults): Promise<void> => {
+    const response = await fetch(`${MONGO_API_BASE_URL}/students/${userId}/score`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ finalResults }),
+    });
+    if (!response.ok) {
+        throw new Error('Failed to update score.');
+    }
+}
+
+
+// --- EXISTING GAME DATA FUNCTIONS ---
+
 export const fetchInitialGameData = async () => {
   const [qcmResponse, inputResponse, audioResponse] = await Promise.all([
     fetch(`${MONGO_API_BASE_URL}/qcm-questions`),
@@ -25,9 +75,6 @@ export const fetchInitialGameData = async () => {
   };
 };
 
-/**
- * Submits a text answer for evaluation.
- */
 export const submitTextAnswerForEvaluation = async (body: {
   text_input: string;
   question_input: string;
@@ -52,9 +99,6 @@ export const submitTextAnswerForEvaluation = async (body: {
   }
 };
 
-/**
- * Submits an audio recording for evaluation.
- */
 export const submitAudioForEvaluation = async (formData: FormData): Promise<AudioApiResponse> => {
   console.log("Submitting to AUDIO Evaluation API (non-blocking)...");
   try {
@@ -72,9 +116,6 @@ export const submitAudioForEvaluation = async (formData: FormData): Promise<Audi
   }
 };
 
-/**
- * Helper to parse the score from the audio API response.
- */
 export const parseAudioScore = (scoreValue: number): number => {
   if (typeof scoreValue === 'number' && !isNaN(scoreValue)) {
     return scoreValue;
@@ -82,13 +123,10 @@ export const parseAudioScore = (scoreValue: number): number => {
   return 0;
 };
 
-/**
- * Helper to parse the accuracy score from the audio API response.
- */
 export const parseAccuracyScore = (accuracy: string | number): number => {
     if (typeof accuracy === 'number') {
         return accuracy;
     }
     const match = accuracy.match(/(\d+(\.\d+)?)/);
     return match ? parseFloat(match[0]) : 0;
-}
+};

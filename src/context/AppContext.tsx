@@ -1,11 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/context/AppContext.tsx
 import { createContext, useContext, useCallback, useState, type ReactNode } from 'react';
 import { useQuiz } from './QuizContext';
 import { useData } from './DataContext';
+import { useAuth } from './AuthContext';
 import { ScreenManager } from '@/components/ScreenManager';
+import { LoginScreen } from '@/screens/LoginScreen';
+import { RegisterScreen } from '@/screens/RegisterScreen';
+import { TeacherDashboardScreen } from '@/screens/TeacherDashboardScreen';
 
+// Add new screen types
 export const SCREEN_TYPES = {
+  LOGIN: 'login',
+  REGISTER: 'register',
+  TEACHER_DASHBOARD: 'teacher_dashboard',
   MENU: 'menu',
   QCM: 'qcm',
   INPUT: 'input',
@@ -16,6 +23,7 @@ export const SCREEN_TYPES = {
   ERROR: 'error',
 } as const;
 
+// CORRECTED LINE: Removed the extra `typeof`
 export type ScreenType = (typeof SCREEN_TYPES)[keyof typeof SCREEN_TYPES];
 
 interface AppContextType {
@@ -67,17 +75,38 @@ export const useAppContext = (): AppContextType => {
   return context;
 };
 
+// This component is now the main router for the entire app flow
 export const AppFlowManager: React.FC = () => {
     const { isLoading, error } = useData();
+    const { currentUser } = useAuth();
     const { currentScreen } = useAppContext();
+    const [authScreen, setAuthScreen] = useState<'login' | 'register'>('login');
 
     if (isLoading) {
       return <div className="flex items-center justify-center h-screen text-white text-2xl font-bold">Loading Game...</div>;
     }
   
     if (error) {
-      return <div className="flex items-center justify-center h-screen text-red-500 text-2xl font-bold">Failed to load game data. Please try again later.</div>;
+      return <div className="flex items-center justify-center h-screen text-red-500 text-2xl font-bold">Failed to load game data. Please try again.</div>;
     }
-    
-    return <ScreenManager currentScreen={currentScreen} />;
+
+    // If no user is logged in, show the appropriate auth screen
+    if (!currentUser) {
+        if (authScreen === 'login') {
+            return <LoginScreen switchToRegister={() => setAuthScreen('register')} />;
+        }
+        return <RegisterScreen switchToLogin={() => setAuthScreen('login')} />;
+    }
+
+    // If user is a teacher, show the dashboard
+    if (currentUser.role === 'teacher') {
+        return <TeacherDashboardScreen />;
+    }
+
+    // If user is a student, show the game flow
+    if (currentUser.role === 'student') {
+        return <ScreenManager currentScreen={currentScreen} />;
+    }
+
+    return <div>Something went wrong.</div>;
 }
