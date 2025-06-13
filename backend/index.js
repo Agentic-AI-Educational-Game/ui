@@ -18,6 +18,7 @@ const QCM_COLLECTION = 'qcm_questions';
 const INPUT_COLLECTION = 'generated_questions';
 const AUDIO_COLLECTION = 'textes';
 const USERS_COLLECTION = 'users'; // New collection for users
+const FITB_COLLECTION = 'fitb_questions';
 let db;
 
 // --- Connect to Database and Start Server ---
@@ -187,7 +188,9 @@ app.get('/api/qcm-questions', async (req, res) => {
   if (!db) return res.status(500).json({ error: 'Database not connected' });
   try {
     const questions = await db.collection(QCM_COLLECTION).find({}).toArray();
-    res.status(200).json(questions);
+    const fitb = await db.collection(FITB_COLLECTION).find({}).toArray();
+    const all_question = questions.concat(fitb) ;
+    res.status(200).json(all_question);
   } catch (error) {
     console.error('Failed to fetch QCM questions:', error);
     res.status(500).json({ error: 'Failed to fetch data' });
