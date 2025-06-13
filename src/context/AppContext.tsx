@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useContext, useCallback, useState, type ReactNode } from 'react';
 import { useQuiz } from './QuizContext';
@@ -8,8 +7,8 @@ import { ScreenManager } from '@/components/ScreenManager';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { RegisterScreen } from '@/screens/RegisterScreen';
 import { TeacherDashboardScreen } from '@/screens/TeacherDashboardScreen';
+import { QuizProgressBar } from '@/components/QuizProgressBar';
 
-// Add new screen types
 export const SCREEN_TYPES = {
   LOGIN: 'login',
   REGISTER: 'register',
@@ -24,7 +23,6 @@ export const SCREEN_TYPES = {
   ERROR: 'error',
 } as const;
 
-// CORRECTED LINE: Removed the extra `typeof`
 export type ScreenType = (typeof SCREEN_TYPES)[keyof typeof SCREEN_TYPES];
 
 interface AppContextType {
@@ -76,11 +74,19 @@ export const useAppContext = (): AppContextType => {
   return context;
 };
 
-// This component is now the main router for the entire app flow
+// --- CORRECTED HELPER FUNCTION ---
+const isQuizScreen = (screen: ScreenType) => {
+    // We explicitly type the array to satisfy TypeScript's strict checking.
+    const quizScreens: ScreenType[] = [SCREEN_TYPES.QCM, SCREEN_TYPES.INPUT, SCREEN_TYPES.AUDIO];
+    return quizScreens.includes(screen);
+}
+// --- END CORRECTION ---
+
 export const AppFlowManager: React.FC = () => {
     const { isLoading, error } = useData();
     const { currentUser } = useAuth();
     const { currentScreen } = useAppContext();
+    const { totalProgress } = useQuiz();
     const [authScreen, setAuthScreen] = useState<'login' | 'register'>('login');
 
     if (isLoading) {
@@ -91,7 +97,6 @@ export const AppFlowManager: React.FC = () => {
       return <div className="flex items-center justify-center h-screen text-red-500 text-2xl font-bold">Failed to load game data. Please try again.</div>;
     }
 
-    // If no user is logged in, show the appropriate auth screen
     if (!currentUser) {
         if (authScreen === 'login') {
             return <LoginScreen switchToRegister={() => setAuthScreen('register')} />;
@@ -99,14 +104,23 @@ export const AppFlowManager: React.FC = () => {
         return <RegisterScreen switchToLogin={() => setAuthScreen('login')} />;
     }
 
-    // If user is a teacher, show the dashboard
     if (currentUser.role === 'teacher') {
         return <TeacherDashboardScreen />;
     }
 
-    // If user is a student, show the game flow
     if (currentUser.role === 'student') {
-        return <ScreenManager currentScreen={currentScreen} />;
+        return (
+            <div className="w-full flex flex-col items-center">
+                {isQuizScreen(currentScreen) && (
+                    <QuizProgressBar 
+                        progress={totalProgress}
+                        cursorImage="/assets/running-character.png"
+                        finishImage="/assets/finish-line.png"
+                    />
+                )}
+                <ScreenManager currentScreen={currentScreen} />
+            </div>
+        );
     }
 
     return <div>Something went wrong.</div>;

@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createContext, useContext, useState, useCallback, type ReactNode, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode, useRef, useMemo } from 'react';
 import { useData } from './DataContext';
 import { useAuth } from './AuthContext'; // Import useAuth
 import { submitTextAnswerForEvaluation, submitAudioForEvaluation, parseAudioScore, parseAccuracyScore } from '@/services/api';
@@ -19,6 +19,7 @@ interface QuizContextType {
   inputState: InputState;
   audioState: AudioState;
   finalResults: FinalResults | null;
+  totalProgress: number; // --- NEW: Add total progress to the context type ---
   resetAndInitializeGame: () => void;
   submitQcmAnswer: (selectedChoiceKey: string, onComplete: () => void) => void;
   submitInputAnswer: (userAnswer: string, onComplete: () => void) => void;
@@ -34,7 +35,7 @@ const initialAudioState: AudioState = { audioQuestions: [], currentQuestionIndex
 
 export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { qcmQuestions, inputQuestions, audioQuestions } = useData();
-  const { currentUser, updateScore } = useAuth(); // Get user and update function
+  const { currentUser, updateScore } = useAuth();
 
   const [quizState, setQuizState] = useState<QuizState>(initialQuizState);
   const [inputState, setInputState] = useState<InputState>(initialInputState);
@@ -51,14 +52,36 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setAudioState({ audioQuestions, currentQuestionIndex: 0, currentQuestion: audioQuestions.length > 0 ? audioQuestions[0] : undefined, isAudioFinished: false, totalQuestions: audioQuestions.length });
   }, [qcmQuestions, inputQuestions, audioQuestions]);
   
+  // --- NEW: Calculate total progress across all quiz sections ---
+  const totalProgress = useMemo(() => {
+    const totalQcm = quizState.totalQuestions;
+    const totalInput = inputState.totalQuestions;
+    const totalAudio = audioState.totalQuestions;
+
+    const totalSteps = totalQcm + totalInput + totalAudio;
+    if (totalSteps === 0) return 0;
+
+    // Calculate completed steps based on which section the user is in
+    const completedQcm = quizState.currentQuestionIndex;
+    const completedInput = inputState.currentQuestionIndex;
+    const completedAudio = audioState.currentQuestionIndex;
+    
+    // The total completed is the sum of all *previous* sections plus the progress in the *current* section.
+    const completedSteps = completedQcm + completedInput + completedAudio;
+
+    return (completedSteps / totalSteps) * 100;
+  }, [quizState, inputState, audioState]);
+  // --- END NEW ---
+
   const submitQcmAnswer = useCallback((selectedChoiceKey: string, onComplete: () => void) => {
     if (!quizState.currentQuestion) return;
     const isCorrect = selectedChoiceKey === quizState.currentQuestion.correct_option;
     const newScore = quizState.score + (isCorrect ? 1 : 0);
+    // Move to next question or finish section
     if (quizState.currentQuestionIndex < qcmQuestions.length - 1) {
       setQuizState(prev => ({ ...prev, score: newScore, currentQuestionIndex: prev.currentQuestionIndex + 1, currentQuestion: qcmQuestions[prev.currentQuestionIndex + 1] }));
     } else {
-      setQuizState(prev => ({ ...prev, score: newScore, isQuizFinished: true }));
+      setQuizState(prev => ({ ...prev, score: newScore, isQuizFinished: true, currentQuestionIndex: prev.currentQuestionIndex + 1 })); // Increment index one last time for progress
       onComplete();
     }
   }, [quizState, qcmQuestions]);
@@ -73,7 +96,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (inputState.currentQuestionIndex < inputQuestions.length - 1) {
       setInputState(prev => ({ ...prev, currentQuestionIndex: prev.currentQuestionIndex + 1, currentQuestion: inputQuestions[prev.currentQuestionIndex + 1] }));
     } else {
-      setInputState(prev => ({ ...prev, isInputFinished: true }));
+      setInputState(prev => ({ ...prev, isInputFinished: true, currentQuestionIndex: prev.currentQuestionIndex + 1 })); // Increment index one last time
       onComplete();
     }
   }, [inputState, inputQuestions]);
@@ -93,10 +116,13 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     apiPromisesRef.current.push(audioPromise);
 
     if (audioState.currentQuestionIndex < audioQuestions.length - 1) {
-      setAudioState(prev => ({ ...prev, currentQuestionIndex: prev.currentQuestionIndex + 1, currentQuestion: audioQuestions[prev.currentQuestionIndex + 1] }));
+        // This part is a bit different. Since handleAudioSubmitted is called *after* an answer,
+        // we can advance the state immediately for the next question.
+        setAudioState(prev => ({ ...prev, currentQuestionIndex: prev.currentQuestionIndex + 1, currentQuestion: audioQuestions[prev.currentQuestionIndex + 1] }));
     } else {
-      setAudioState(prev => ({ ...prev, isAudioFinished: true }));
-      onComplete(apiPromisesRef.current);
+        // If it's the last audio question, we call the onComplete to finalize.
+        setAudioState(prev => ({ ...prev, isAudioFinished: true, currentQuestionIndex: prev.currentQuestionIndex + 1 })); // Final increment
+        onComplete(apiPromisesRef.current);
     }
   }, [audioState, audioQuestions]);
 
@@ -146,7 +172,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [quizState.score, inputQuestions.length, audioQuestions.length, qcmQuestions.length, currentUser, updateScore]);
 
- const value = { quizState, inputState, audioState, finalResults, resetAndInitializeGame, submitQcmAnswer, submitInputAnswer, handleAudioSubmitted, calculateFinalScores };
+ // Add `totalProgress` to the returned value
+ const value = { quizState, inputState, audioState, finalResults, totalProgress, resetAndInitializeGame, submitQcmAnswer, submitInputAnswer, handleAudioSubmitted, calculateFinalScores };
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;
 };
