@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/context/DataContext.tsx
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useContext, useCallback, useState, type ReactNode } from 'react';
 import { useQuiz } from './QuizContext';
