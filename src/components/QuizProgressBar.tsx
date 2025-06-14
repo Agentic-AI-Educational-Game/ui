@@ -8,7 +8,6 @@ interface QuizProgressBarProps {
 }
 
 export const QuizProgressBar: React.FC<QuizProgressBarProps> = ({ progress, cursorImage, finishImage }) => {
-  // Clamp progress between 0 and 100 to prevent visual glitches
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
 
   return (
@@ -17,20 +16,24 @@ export const QuizProgressBar: React.FC<QuizProgressBarProps> = ({ progress, curs
         {/* The background track of the progress bar */}
         <div className="absolute top-1/2 -translate-y-1/2 w-full h-3 bg-white/50 rounded-full shadow-inner" />
 
-        {/* The filled portion of the progress bar, animated with Framer Motion */}
-        <motion.div
-          className="absolute top-1/2 -translate-y-1/2 h-3 bg-gradient-to-r from-green-300 to-green-500 rounded-full"
-          initial={{ width: '0%' }}
-          animate={{ width: `${clampedProgress}%` }}
-          transition={{ type: 'spring', stiffness: 50, damping: 20 }}
-        />
-
+        {/* --- OPTIMIZATION: Animate `scaleX` instead of `width` --- */}
+        {/* We use a container and animate a child div inside it. */}
+        <div className="absolute top-1/2 -translate-y-1/2 h-3 w-full overflow-hidden rounded-full">
+            <motion.div
+              className="h-full bg-gradient-to-r from-green-300 to-green-500 origin-left"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: clampedProgress / 100 }} // scaleX works from 0 to 1
+              transition={{ type: 'spring', stiffness: 50, damping: 20 }}
+              style={{ willChange: 'transform' }} // Hint to the browser about the animation
+            />
+        </div>
+        
         {/* The running character cursor, also animated */}
         <motion.div
           className="absolute top-1/2 z-10"
           style={{
-            // Start at 0%, end at 100%. transform moves the image so its center is on the line.
             transform: 'translateY(-50%) translateX(-50%)', 
+            willChange: 'transform', // This is a good hint for performance
           }}
           initial={{ left: '0%' }}
           animate={{ left: `${clampedProgress}%` }}

@@ -13,7 +13,8 @@ export const SCREEN_TYPES = {
   LOGIN: 'login',
   REGISTER: 'register',
   TEACHER_DASHBOARD: 'teacher_dashboard',
-  STORY: 'story', // --- NEW: Add the Story screen type ---
+  STORY: 'story',
+  END_STORY: 'end_story', // --- NEW: Add the End Story screen type ---
   MENU: 'menu',
   QCM: 'qcm',
   INPUT: 'input',
@@ -29,7 +30,8 @@ export type ScreenType = (typeof SCREEN_TYPES)[keyof typeof SCREEN_TYPES];
 interface AppContextType {
   currentScreen: ScreenType;
   navigateToMenu: () => void;
-  navigateToStory: () => void; // --- NEW: Add function to navigate to the story ---
+  navigateToStory: () => void;
+  navigateToEnding: () => void; // --- NEW: Add function to navigate to the ending ---
   startGame: () => void;
   advanceToNextScreen: () => void;
   handleFinalSubmission: (promises: Promise<any>[]) => void;
@@ -46,9 +48,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCurrentScreen(SCREEN_TYPES.MENU);
   }, [resetAndInitializeGame]);
 
-  // --- NEW: Function to explicitly go to the story screen ---
   const navigateToStory = useCallback(() => {
     setCurrentScreen(SCREEN_TYPES.STORY);
+  }, []);
+
+  // --- NEW: Function to explicitly go to the end story screen ---
+  const navigateToEnding = useCallback(() => {
+    setCurrentScreen(SCREEN_TYPES.END_STORY);
   }, []);
 
   const startGame = useCallback(() => {
@@ -70,7 +76,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [calculateFinalScores]);
 
 
-  const value = { currentScreen, navigateToMenu, navigateToStory, startGame, advanceToNextScreen, handleFinalSubmission };
+  const value = { currentScreen, navigateToMenu, navigateToStory, navigateToEnding, startGame, advanceToNextScreen, handleFinalSubmission };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
@@ -81,11 +87,11 @@ export const useAppContext = (): AppContextType => {
   return context;
 };
 
+// ... (The rest of the file remains the same)
 const isQuizScreen = (screen: ScreenType) => {
     const quizScreens: ScreenType[] = [SCREEN_TYPES.QCM, SCREEN_TYPES.INPUT, SCREEN_TYPES.AUDIO];
     return quizScreens.includes(screen);
 }
-
 export const AppFlowManager: React.FC = () => {
     const { isLoading, error } = useData();
     const { currentUser } = useAuth();

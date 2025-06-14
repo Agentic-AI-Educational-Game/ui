@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import type { FinalResults } from '../context/QuizContext';
+import { PartyPopper } from 'lucide-react'; // Import a fun icon
 
 interface FinalScoreProps {
   results: FinalResults | null;
   playAgain: () => void;
   goToMenu: () => void;
+  onSeeEnding: () => void; // --- NEW: Add prop for the new function ---
 }
 
 const ScoreItem: FC<{ label: string; score: number }> = ({ label, score }) => (
@@ -17,7 +19,8 @@ const ScoreItem: FC<{ label: string; score: number }> = ({ label, score }) => (
   </div>
 );
 
-export const FinalScore: FC<FinalScoreProps> = ({ results, playAgain, goToMenu }) => {
+// --- NEW: Destructure onSeeEnding from props ---
+export const FinalScore: FC<FinalScoreProps> = ({ results, playAgain, goToMenu, onSeeEnding }) => {
   if (!results) {
     return (
       <Card className="w-full max-w-md text-center p-8">
@@ -48,13 +51,25 @@ export const FinalScore: FC<FinalScoreProps> = ({ results, playAgain, goToMenu }
             <ScoreItem label="Précision de Lecture" score={results.audioAccuracyTotal} />
             <ScoreItem label="Prononciation" score={results.audioPronunciationTotal} />
           </div>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
-            <Button onClick={goToMenu} className="h-14 text-lg font-bold rounded-2xl bg-slate-300 border-b-8 border-slate-400 text-slate-700 hover:bg-slate-200">
-              Menu Principal
+          {/* --- UPDATED: Button layout is now a single column for better hierarchy --- */}
+          <div className="flex flex-col justify-center gap-3 pt-6">
+            {/* The new, primary button to see the story's end */}
+            <Button
+              onClick={onSeeEnding}
+              className="h-16 text-xl font-bold rounded-2xl bg-purple-500 border-b-8 border-purple-700 text-white hover:bg-purple-400"
+            >
+              Voir la fin de l'histoire <PartyPopper className="ml-2 h-6 w-6" />
             </Button>
-            <Button onClick={playAgain} className="h-14 text-lg font-bold rounded-2xl bg-orange-400 border-b-8 border-orange-600 text-white hover:bg-orange-300">
-              Rejouer !
-            </Button>
+            
+            {/* Secondary options */}
+            <div className="flex gap-3">
+              <Button onClick={goToMenu} className="flex-1 h-12 text-lg font-bold rounded-2xl bg-slate-300 border-b-8 border-slate-400 text-slate-700 hover:bg-slate-200">
+                Menu
+              </Button>
+              <Button onClick={playAgain} className="flex-1 h-12 text-lg font-bold rounded-2xl bg-orange-400 border-b-8 border-orange-600 text-white hover:bg-orange-300">
+                Rejouer
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

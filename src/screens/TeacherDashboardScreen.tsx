@@ -80,7 +80,7 @@ export const TeacherDashboardScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-        <div className="flex flex-col items-center justify-center h-screen text-gray-600">
+        <div className="flex flex-col items-center justify-center h-screen text-blue-400">
             <Loader2 className="h-12 w-12 animate-spin" />
             <p className="mt-4 text-lg">Chargement du tableau de bord...</p>
         </div>
@@ -101,7 +101,7 @@ export const TeacherDashboardScreen: React.FC = () => {
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-7xl mx-auto p-2 sm:p-4">
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Tableau de Bord Professeur</h1>
+            <h1 className="text-3xl font-bold text-blue-500">Tableau de Bord Professeur</h1>
             <p className="text-gray-500">Bon retour, {currentUser?.username} !</p>
           </div>
           <Button onClick={logout} variant="outline" className="mt-4 sm:mt-0">
