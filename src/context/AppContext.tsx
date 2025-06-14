@@ -97,7 +97,7 @@ const isQuizScreen = (screen: ScreenType) => {
 
 // A generic loading spinner for all lazy-loaded components at this level
 const TopLevelLoader: React.FC = () => (
-    <div className="flex items-center justify-center h-full">
+    <div className="flex items-center justify-center min-h-screen">
         <motion.div
             className="w-20 h-20 border-8 border-t-blue-500 border-blue-200 rounded-full"
             animate={{ rotate: 360 }}
@@ -106,7 +106,6 @@ const TopLevelLoader: React.FC = () => (
     </div>
 );
 
-// --- THIS IS THE COMPLETE, FULLY LOGICAL APP FLOW MANAGER ---
 export const AppFlowManager: React.FC = () => {
     const { isLoading, error } = useData();
     const { currentUser } = useAuth();
@@ -115,46 +114,44 @@ export const AppFlowManager: React.FC = () => {
     const [authScreen, setAuthScreen] = useState<'login' | 'register'>('login');
 
     useEffect(() => {
-       if (currentUser && currentUser.role === 'student' && !sessionStorage.getItem('story_seen')) {
+      // Show story on student login
+      if (currentUser && currentUser.role === 'student' && !sessionStorage.getItem('story_seen')) {
         navigateToStory();
         sessionStorage.setItem('story_seen', 'true');
       }
-
-      // --- CRITICAL FIX: Clear story flag on logout ---
-      // This effect runs when `currentUser` becomes null (i.e., on logout).
+      // Clear story flag on logout
       if (!currentUser) {
         sessionStorage.removeItem('story_seen');
       }
     }, [currentUser, navigateToStory]);
-    // Top-level loading state for initial data fetch
+
     if (isLoading) {
       return (
         <div className="flex items-center justify-center h-full text-white text-2xl font-bold">
-            Chargement du jeu...
+          Chargement du jeu...
         </div>
       );
     }
-  
-    // Top-level error state if data fails to load
     if (error) {
       return (
         <div className="flex items-center justify-center h-full text-red-500 text-2xl font-bold">
-            Impossible de charger les données du jeu. Veuillez réessayer plus tard.
+          Impossible de charger les données du jeu.
         </div>
       );
     }
+
+    // A simpler centering wrapper for non-dashboard screens
     const CenteredLayout: React.FC<{children: React.ReactNode}> = ({ children }) => (
-        <div className="w-full h-full flex flex-col items-center justify-center">
+        <div className="min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center">
             {children}
         </div>
     );
-    // --- Suspense boundary wraps all conditional rendering ---
-     return (
+
+    return (
         <Suspense fallback={<TopLevelLoader />}>
             {!currentUser ? (
-                // AUTH FLOW
+                // Auth Flow
                 <CenteredLayout>
-                  {/* The side-effect is now correctly handled in useEffect */}
                   {authScreen === 'login' ? (
                       <LoginScreen switchToRegister={() => setAuthScreen('register')} />
                   ) : (
@@ -162,10 +159,10 @@ export const AppFlowManager: React.FC = () => {
                   )}
                 </CenteredLayout>
             ) : currentUser.role === 'teacher' ? (
-                // TEACHER FLOW
+                // The dashboard renders directly and handles its own layout.
                 <TeacherDashboardScreen />
             ) : (
-                // STUDENT FLOW
+                // Student Flow
                 <CenteredLayout>
                     <div className="w-full flex flex-col items-center">
                         {isQuizScreen(currentScreen) && (

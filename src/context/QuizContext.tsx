@@ -12,14 +12,13 @@ import type InputQuestion from '@/interface/InputQuestion';
 interface QuizState { qcmQuestions: QuestionQcm[]; currentQuestionIndex: number; score: number; currentQuestion: QuestionQcm | undefined; isQuizFinished: boolean; totalQuestions: number; }
 interface InputState { inputQuestions: InputQuestion[]; currentQuestionIndex: number; currentQuestion: InputQuestion | undefined; isInputFinished: boolean; totalQuestions: number; }
 interface AudioState { audioQuestions: AudioQuestion[]; currentQuestionIndex: number; currentQuestion: AudioQuestion | undefined; isAudioFinished: boolean; totalQuestions: number; }
-export interface FinalResults { qcmScoreTotal: number; textScoreTotal: number; audioPronunciationTotal: number; audioAccuracyTotal: number; finalAverageScore: number; }
-
-interface QuizContextType {
+export interface FinalResults { qcmScoreTotal: number; textScoreTotal: number; audioPronunciationTotal: number; audioAccuracyTotal: number; finalAverageScore: number; }interface QuizContextType {
   quizState: QuizState;
   inputState: InputState;
   audioState: AudioState;
   finalResults: FinalResults | null;
-  totalProgress: number; // --- NEW: Add total progress to the context type ---
+  pronunciationFeedback: string[]; // --- NEW: To store feedback strings ---
+  totalProgress: number;
   resetAndInitializeGame: () => void;
   submitQcmAnswer: (selectedChoiceKey: string, onComplete: () => void) => void;
   submitInputAnswer: (userAnswer: string, onComplete: () => void) => void;
@@ -41,12 +40,14 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [inputState, setInputState] = useState<InputState>(initialInputState);
   const [audioState, setAudioState] = useState<AudioState>(initialAudioState);
   const [finalResults, setFinalResults] = useState<FinalResults | null>(null);
-  
+  const [pronunciationFeedback, setPronunciationFeedback] = useState<string[]>([]); // --- NEW: State for feedback ---
+
   const apiPromisesRef = useRef<Promise<any>[]>([]);
 
   const resetAndInitializeGame = useCallback(() => {
     apiPromisesRef.current = [];
     setFinalResults(null);
+    setPronunciationFeedback([]); 
     setQuizState({ qcmQuestions, currentQuestionIndex: 0, score: 0, currentQuestion: qcmQuestions.length > 0 ? qcmQuestions[0] : undefined, isQuizFinished: false, totalQuestions: qcmQuestions.length });
     setInputState({ inputQuestions, currentQuestionIndex: 0, currentQuestion: inputQuestions.length > 0 ? inputQuestions[0] : undefined, isInputFinished: false, totalQuestions: inputQuestions.length });
     setAudioState({ audioQuestions, currentQuestionIndex: 0, currentQuestion: audioQuestions.length > 0 ? audioQuestions[0] : undefined, isAudioFinished: false, totalQuestions: audioQuestions.length });
@@ -108,10 +109,11 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     formData.append('audio', audioBlob, 'recording.wav');
     formData.append('expected_text', currentQuestion.texte);
     
-    const audioPromise = submitAudioForEvaluation(formData).then(response => ({
+  const audioPromise = submitAudioForEvaluation(formData).then(response => ({
         type: 'audio',
         pronunciationScore: parseAudioScore(response.score),
-        accuracyScore: parseAccuracyScore(response.accuracy)
+        accuracyScore: parseAccuracyScore(response.accuracy),
+        feedback: response.pron_feedback, // Capture the feedback string
     }));
     apiPromisesRef.current.push(audioPromise);
 
@@ -133,15 +135,28 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         let textScoreSum = 0;
         let audioPronunciationSum = 0;
         let audioAccuracySum = 0;
-        
+        const feedbackList: string[] = []; // --- NEW: Temporary list to gather feedback ---
+
         results.forEach(res => {
             if (res.type === 'text') { textScoreSum += res.score; } 
             else if (res.type === 'audio') {
-                audioPronunciationSum += res.pronunciationScore  * 10;
+                 const MAX_API_SCORE = 10;
+                
+                // 1. Clamp the score to ensure it's not negative or unexpectedly high.
+                const clampedScore = Math.max(0, Math.min(res.pronunciationScore, MAX_API_SCORE));
+                
+                // 2. Normalize the score to a 0-100 scale.
+                const scoreOutOf100 = (clampedScore / MAX_API_SCORE) * 100;
+                
+                audioPronunciationSum += scoreOutOf100;
                 audioAccuracySum += res.accuracyScore;
+                
+                 if (res.feedback && res.feedback.trim() !== "") {
+                    feedbackList.push(res.feedback);
+                }
             }
         });
-
+        setPronunciationFeedback(feedbackList);
         const textScoreTotal = inputQuestions.length > 0 ? textScoreSum / inputQuestions.length : 0;
         const audioPronunciationTotal = audioQuestions.length > 0 ? audioPronunciationSum / audioQuestions.length : 0;
         const audioAccuracyTotal = audioQuestions.length > 0 ? audioAccuracySum / audioQuestions.length : 0;
@@ -173,8 +188,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [quizState.score, inputQuestions.length, audioQuestions.length, qcmQuestions.length, currentUser, updateScore]);
 
  // Add `totalProgress` to the returned value
- const value = { quizState, inputState, audioState, finalResults, totalProgress, resetAndInitializeGame, submitQcmAnswer, submitInputAnswer, handleAudioSubmitted, calculateFinalScores };
-
+const value = { quizState, inputState, audioState, finalResults, pronunciationFeedback, totalProgress, resetAndInitializeGame, submitQcmAnswer, submitInputAnswer, handleAudioSubmitted, calculateFinalScores };
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;
 };
 

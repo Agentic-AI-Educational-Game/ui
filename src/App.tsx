@@ -22,14 +22,12 @@ function App() {
       <DataProvider>
         <QuizProvider>
           <AppProvider>
-            {/* --- CRITICAL FIX: Removed justify-center and items-center --- */}
-            {/* This div now acts purely as a full-screen container with a background. */}
-            <div className="h-screen w-full bg-cover bg-center bg-no-repeat"
+            {/* --- CRITICAL FIX: Use min-h-screen and bg-fixed. No flex, no centering here. --- */}
+            <div className="min-h-screen w-full bg-cover bg-center bg-fixed"
             style={{ backgroundImage: "url('/assets/background.png')" }}
             >
-              {/* --- CRITICAL FIX: The AppFlowManager's container now controls its own layout and centering --- */}
-              {/* Added padding here instead of the parent */}
-              <div className="h-full w-full max-w-7xl mx-auto flex flex-col p-2 sm:p-4">
+              {/* This inner div now simply provides padding and a max-width for the content. */}
+              <div className="w-full max-w-7xl mx-auto p-4">
                 <AppFlowManager />
               </div>
             </div>

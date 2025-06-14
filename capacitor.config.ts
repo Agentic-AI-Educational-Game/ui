@@ -12,6 +12,7 @@ const config: CapacitorConfig = {
     
     // --- THIS IS THE CRUCIAL FIX ---
     // Change the scheme from "https" to "http" for Android
+
     androidScheme: 'http', 
     
     // You can keep the iOS one as https if you're not developing for it,

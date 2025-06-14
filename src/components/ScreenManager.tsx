@@ -70,13 +70,12 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({ currentScreen }) =
         );
       case SCREEN_TYPES.PROCESSING:
         return <ProcessingScreen />;
-      case SCREEN_TYPES.SCORE:
+     case SCREEN_TYPES.SCORE:
         return (
           <FinalScore
             results={finalResults}
             playAgain={startGame}
-            goToMenu={navigateToMenu}
-            onSeeEnding={navigateToEnding}
+            onSeeEnding={navigateToEnding} // No more goToMenu
           />
         );
       default:

@@ -3,9 +3,9 @@ import type { TextInputApiResponse, AudioApiResponse } from '@/interface/ApiResp
 import type { User } from '@/context/AuthContext';
 import type { FinalResults } from '@/context/QuizContext';
 
-const MONGO_API_BASE_URL = 'http://192.168.0.107:8080/api';
-const TEXT_EVALUATION_API_URL = 'http://192.168.0.107:5000/evaluate_answer';
-const AUDIO_EVALUATION_API_URL = 'http://192.168.0.107:5002/evaluate';
+const MONGO_API_BASE_URL = 'http://192.168.248.154:8080/api';
+const TEXT_EVALUATION_API_URL = 'http://192.168.248.154:5000/evaluate_answer';
+const AUDIO_EVALUATION_API_URL = 'http://192.168.248.154:5002/evaluate';
 
 // --- NEW AUTH AND USER FUNCTIONS ---
 
