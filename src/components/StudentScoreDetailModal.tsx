@@ -10,16 +10,18 @@ interface StudentScoreDetailModalProps {
   onClose: () => void;
 }
 
-const ScoreDetailItem: React.FC<{ icon: React.ElementType, label: string, score: number }> = ({ icon: Icon, label, score }) => (
-    <div className="flex items-center justify-between p-3 bg-slate-100 rounded-lg">
-        <div className="flex items-center gap-3">
-            <Icon className="h-5 w-5 text-slate-500" />
-            <span className="font-medium text-slate-700">{label}</span>
+const ScoreDetailItem = React.memo(function ScoreDetailItem({ icon: Icon, label, score }: { icon: React.ElementType, label: string, score: number }) {
+    return (
+        <div className="flex items-center justify-between p-3 bg-slate-100 rounded-lg">
+            <div className="flex items-center gap-3">
+                <Icon className="h-5 w-5 text-slate-500" />
+                <span className="font-medium text-slate-700">{label}</span>
+            </div>
+            <span className="font-bold text-lg text-blue-600">{score} / 100</span>
         </div>
-        <span className="font-bold text-lg text-blue-600">{score} / 100</span>
-    </div>
-);
-
+    );
+});
+ScoreDetailItem.displayName = "ScoreDetailItem";
 
 export const StudentScoreDetailModal: React.FC<StudentScoreDetailModalProps> = ({ student, onClose }) => {
   return (

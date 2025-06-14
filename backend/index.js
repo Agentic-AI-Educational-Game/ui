@@ -16,7 +16,7 @@ const MONGO_URI = process.env.MONGO_URI;
 const DB_NAME = 'db_questions';
 const QCM_COLLECTION = 'qcm_questions';
 const INPUT_COLLECTION = 'generated_questions';
-const AUDIO_COLLECTION = 'textes';
+const AUDIO_COLLECTION = 'texts_llm';
 const USERS_COLLECTION = 'users'; // New collection for users
 const FITB_COLLECTION = 'fitb_questions';
 let db;

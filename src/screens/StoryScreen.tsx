@@ -35,8 +35,10 @@ export const StoryScreen: React.FC<StoryScreenProps> = ({ onComplete }) => {
   const currentStory = storyPages[currentPage - 1];
 
   return (
-    <Card className="w-full max-w-lg bg-purple-100/90 backdrop-blur-sm border-4 border-purple-400 shadow-2xl rounded-3xl p-4 sm:p-6">
-      <CardContent className="p-0">
+    // --- UPDATED: Added flex and flex-col to make the card layout flexible ---
+    <Card className="w-full max-w-lg bg-purple-100/90 backdrop-blur-sm border-4 border-purple-400 shadow-2xl rounded-3xl p-4 sm:p-6 flex flex-col">
+      {/* --- UPDATED: This content area will now grow/shrink and scroll if needed --- */}
+      <CardContent className="p-0 flex-grow overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPage}
@@ -45,6 +47,7 @@ export const StoryScreen: React.FC<StoryScreenProps> = ({ onComplete }) => {
             exit={{ opacity: 0, x: -50 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className="flex flex-col items-center gap-4"
+            style={{ willChange: 'transform, opacity' }}
           >
             <div className="bg-white/80 p-5 rounded-2xl shadow-inner w-full">
               <p className="text-lg text-center font-semibold text-slate-800 leading-relaxed">
@@ -63,7 +66,8 @@ export const StoryScreen: React.FC<StoryScreenProps> = ({ onComplete }) => {
         </AnimatePresence>
       </CardContent>
 
-      <CardFooter className="pt-6 flex flex-col items-center gap-2">
+      {/* --- UPDATED: Added flex-shrink-0 to prevent the footer from shrinking --- */}
+      <CardFooter className="pt-6 flex flex-col items-center gap-2 flex-shrink-0">
         <div className="flex gap-2">
             {storyPages.map(p => (
                 <div key={p.page} className={`h-3 w-3 rounded-full transition-colors ${currentPage === p.page ? 'bg-purple-600' : 'bg-purple-300'}`} />

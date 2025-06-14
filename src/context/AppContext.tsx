@@ -1,20 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createContext, useContext, useCallback, useState, type ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useCallback, useState, type ReactNode, useEffect, Suspense } from 'react';
 import { useQuiz } from './QuizContext';
 import { useData } from './DataContext';
 import { useAuth } from './AuthContext';
-import { ScreenManager } from '@/components/ScreenManager';
-import { LoginScreen } from '@/screens/LoginScreen';
-import { RegisterScreen } from '@/screens/RegisterScreen';
-import { TeacherDashboardScreen } from '@/screens/TeacherDashboardScreen';
+import { motion } from 'framer-motion';
 import { QuizProgressBar } from '@/components/QuizProgressBar';
+
+// --- OPTIMIZATION: We are lazy-loading all major screen components ---
+const ScreenManager = React.lazy(() => import('../components/ScreenManager').then(module => ({ default: module.ScreenManager })));
+const LoginScreen = React.lazy(() => import('../screens/LoginScreen').then(module => ({ default: module.LoginScreen })));
+const RegisterScreen = React.lazy(() => import('../screens/RegisterScreen').then(module => ({ default: module.RegisterScreen })));
+const TeacherDashboardScreen = React.lazy(() => import('../screens/TeacherDashboardScreen').then(module => ({ default: module.TeacherDashboardScreen })));
+
 
 export const SCREEN_TYPES = {
   LOGIN: 'login',
   REGISTER: 'register',
   TEACHER_DASHBOARD: 'teacher_dashboard',
   STORY: 'story',
-  END_STORY: 'end_story', // --- NEW: Add the End Story screen type ---
+  END_STORY: 'end_story',
   MENU: 'menu',
   QCM: 'qcm',
   INPUT: 'input',
@@ -31,7 +35,7 @@ interface AppContextType {
   currentScreen: ScreenType;
   navigateToMenu: () => void;
   navigateToStory: () => void;
-  navigateToEnding: () => void; // --- NEW: Add function to navigate to the ending ---
+  navigateToEnding: () => void;
   startGame: () => void;
   advanceToNextScreen: () => void;
   handleFinalSubmission: (promises: Promise<any>[]) => void;
@@ -52,7 +56,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCurrentScreen(SCREEN_TYPES.STORY);
   }, []);
 
-  // --- NEW: Function to explicitly go to the end story screen ---
   const navigateToEnding = useCallback(() => {
     setCurrentScreen(SCREEN_TYPES.END_STORY);
   }, []);
@@ -87,62 +90,95 @@ export const useAppContext = (): AppContextType => {
   return context;
 };
 
-// ... (The rest of the file remains the same)
 const isQuizScreen = (screen: ScreenType) => {
     const quizScreens: ScreenType[] = [SCREEN_TYPES.QCM, SCREEN_TYPES.INPUT, SCREEN_TYPES.AUDIO];
     return quizScreens.includes(screen);
 }
+
+// A generic loading spinner for all lazy-loaded components at this level
+const TopLevelLoader: React.FC = () => (
+    <div className="flex items-center justify-center h-full">
+        <motion.div
+            className="w-20 h-20 border-8 border-t-blue-500 border-blue-200 rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        />
+    </div>
+);
+
+// --- THIS IS THE COMPLETE, FULLY LOGICAL APP FLOW MANAGER ---
 export const AppFlowManager: React.FC = () => {
     const { isLoading, error } = useData();
     const { currentUser } = useAuth();
-    const { currentScreen, navigateToStory } = useAppContext(); // Get navigateToStory
+    const { currentScreen, navigateToStory } = useAppContext();
     const { totalProgress } = useQuiz();
     const [authScreen, setAuthScreen] = useState<'login' | 'register'>('login');
 
-    // --- NEW: This useEffect hook triggers the story screen on login ---
     useEffect(() => {
-      // When a user logs in (currentUser changes from null to a student object), navigate to the story
-      if (currentUser && currentUser.role === 'student' && !sessionStorage.getItem('story_seen')) {
+       if (currentUser && currentUser.role === 'student' && !sessionStorage.getItem('story_seen')) {
         navigateToStory();
-        sessionStorage.setItem('story_seen', 'true'); // Prevent story from showing on page refresh
+        sessionStorage.setItem('story_seen', 'true');
+      }
+
+      // --- CRITICAL FIX: Clear story flag on logout ---
+      // This effect runs when `currentUser` becomes null (i.e., on logout).
+      if (!currentUser) {
+        sessionStorage.removeItem('story_seen');
       }
     }, [currentUser, navigateToStory]);
-
+    // Top-level loading state for initial data fetch
     if (isLoading) {
-      return <div className="flex items-center justify-center h-screen text-white text-2xl font-bold">Loading Game...</div>;
+      return (
+        <div className="flex items-center justify-center h-full text-white text-2xl font-bold">
+            Chargement du jeu...
+        </div>
+      );
     }
   
+    // Top-level error state if data fails to load
     if (error) {
-      return <div className="flex items-center justify-center h-screen text-red-500 text-2xl font-bold">Failed to load game data. Please try again.</div>;
+      return (
+        <div className="flex items-center justify-center h-full text-red-500 text-2xl font-bold">
+            Impossible de charger les données du jeu. Veuillez réessayer plus tard.
+        </div>
+      );
     }
-
-    if (!currentUser) {
-        // Clear the session storage on logout so the story shows again for the next user
-        sessionStorage.removeItem('story_seen');
-        if (authScreen === 'login') {
-            return <LoginScreen switchToRegister={() => setAuthScreen('register')} />;
-        }
-        return <RegisterScreen switchToLogin={() => setAuthScreen('login')} />;
-    }
-
-    if (currentUser.role === 'teacher') {
-        return <TeacherDashboardScreen />;
-    }
-
-    if (currentUser.role === 'student') {
-        return (
-            <div className="w-full flex flex-col items-center">
-                {isQuizScreen(currentScreen) && (
-                    <QuizProgressBar 
-                        progress={totalProgress}
-                        cursorImage="/assets/running-character.png"
-                        finishImage="/assets/finish-line.png"
-                    />
-                )}
-                <ScreenManager currentScreen={currentScreen} />
-            </div>
-        );
-    }
-
-    return <div>Something went wrong.</div>;
+    const CenteredLayout: React.FC<{children: React.ReactNode}> = ({ children }) => (
+        <div className="w-full h-full flex flex-col items-center justify-center">
+            {children}
+        </div>
+    );
+    // --- Suspense boundary wraps all conditional rendering ---
+     return (
+        <Suspense fallback={<TopLevelLoader />}>
+            {!currentUser ? (
+                // AUTH FLOW
+                <CenteredLayout>
+                  {/* The side-effect is now correctly handled in useEffect */}
+                  {authScreen === 'login' ? (
+                      <LoginScreen switchToRegister={() => setAuthScreen('register')} />
+                  ) : (
+                      <RegisterScreen switchToLogin={() => setAuthScreen('login')} />
+                  )}
+                </CenteredLayout>
+            ) : currentUser.role === 'teacher' ? (
+                // TEACHER FLOW
+                <TeacherDashboardScreen />
+            ) : (
+                // STUDENT FLOW
+                <CenteredLayout>
+                    <div className="w-full flex flex-col items-center">
+                        {isQuizScreen(currentScreen) && (
+                            <QuizProgressBar 
+                                progress={totalProgress}
+                                cursorImage="/assets/running-character.png"
+                                finishImage="/assets/finish-line.png"
+                            />
+                        )}
+                        <ScreenManager currentScreen={currentScreen} />
+                    </div>
+                </CenteredLayout>
+            )}
+        </Suspense>
+    );
 }
