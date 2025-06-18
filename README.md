@@ -1,7 +1,7 @@
 
 # EdTech Fun Game (React + Capacitor Mobile App)
 
-Welcome to EdTech Fun Game! This application is an educational game designed for kids, featuring Multiple Choice Quizzes (MCQ) and Reading Aloud practice with audio recording and evaluation (via API). It's built with React, TypeScript, Tailwind CSS, shadcn/ui, and packaged for mobile using Capacitor.
+Welcome to EdTech Fun Game and Learn! This application is an educational game designed for kids, featuring Multiple Choice Quizzes (MCQ) and Reading Aloud practice with audio recording and evaluation (via API). It's built with React, TypeScript, Tailwind CSS, shadcn/ui, and packaged for mobile using Capacitor.
 
 ## Features
 
